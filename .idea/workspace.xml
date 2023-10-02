@@ -4,33 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="initial commit">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FontRendering/FontMapping.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FontRendering/Glyph.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texture.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureLoader.java" afterDir="false" />
+    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="Textures loading from texture atlas. Color pallete is off">
       <change afterPath="$PROJECT_DIR$/src/main/resources/FontGlyphMap512x512_Black.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/FontGlyphMap512x512_White.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/FontTextureRegions" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/textures/Sunday Mango.ttf" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/textures/test_texture16_test.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkTransitionEvent.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionTransitionEvent.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureAtlas.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureAtlas.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureLoader.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureRegion.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureRegion.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/textures/grass_side.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/textures/grass_side.png" afterDir="false" />
     </list>
@@ -129,7 +114,14 @@
       <option name="project" value="LOCAL" />
       <updated>1694319025604</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Texturing in progress">
+      <created>1696209251128</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1696209251128</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -145,7 +137,9 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+    <MESSAGE value="Texturing in progress" />
+    <MESSAGE value="Textures loading from texture atlas. Color pallete is off" />
+    <option name="LAST_COMMIT_MESSAGE" value="Textures loading from texture atlas. Color pallete is off" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

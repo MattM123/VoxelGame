@@ -1,19 +1,15 @@
 package com.marcuzzo;
 
-import com.marcuzzo.FontRendering.FontMapping;
-import com.marcuzzo.FontRendering.Glyph;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.app.Application;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
-import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -22,24 +18,19 @@ import org.lwjgl.system.MemoryStack;
 
 import java.awt.*;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL31.*;
-import static org.lwjgl.stb.STBImage.stbi_image_free;
-import static org.lwjgl.stb.STBImage.stbi_load;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -50,7 +41,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  */
 public class Window {
 
-    private int uboId;
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     private static long windowPtr;
@@ -72,7 +62,6 @@ public class Window {
     public final float MOUSE_SENSITIVITY = 0.04f;
     private final MouseInput mouseInput = new MouseInput();
     private Vector3f playerInc = new Vector3f(0f, 0f, 0f);
-    private static final Logger logger = Logger.getLogger("Logger");
     public Window(ImGuiLayer layer, ShaderProgram shaderProgram) {
         if (player == null)
             player = new Player();
@@ -86,9 +75,7 @@ public class Window {
         initImGui();
         imGuiGlfw.init(windowPtr, true);
         imGuiGl3.init();
-        FontMapping.initFonts();
-
-
+        TextureLoader.initTextureAtlas();
     }
     public void destroy() {
         shaderProgram.cleanup();
@@ -192,6 +179,7 @@ public class Window {
      * Main program loop
      */
     public void run() {
+
         //========================
         //Shader Compilation
         //========================
@@ -382,13 +370,14 @@ public class Window {
         };
 
         //Loading texture image
-        String path = "src/main/resources/textures/grass_side.png";
-        IntBuffer width = BufferUtils.createIntBuffer(1);
-        IntBuffer height = BufferUtils.createIntBuffer(1);
-        IntBuffer channels = BufferUtils.createIntBuffer(1);
-        ByteBuffer image = stbi_load(path, width, height, channels, 0);
+       // String path = "src/main/resources/textures/grass_side.png";
+       // IntBuffer width = BufferUtils.createIntBuffer(1);
+       // IntBuffer height = BufferUtils.createIntBuffer(1);
+      //  IntBuffer channels = BufferUtils.createIntBuffer(1);
+      //  ByteBuffer image = stbi_load(path, width, height, channels, 0);
 
         //Binding texture ID
+        /*
         int texId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, texId);
 
@@ -410,6 +399,16 @@ public class Window {
         } else {
             logger.warning("Texture could not be loaded from " + path);
         }
+
+         */
+
+
+
+      TextureLoader.loadTexture(Texture.getByteBufferTexture(Texture.GRASS_SIDE));
+
+       // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0),
+        //        0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
 
         /*==================================
         Buffer binding and loading
@@ -494,7 +493,7 @@ public class Window {
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        TextureLoader.unbind();
     }
 
     private void renderWorld() {
@@ -502,8 +501,8 @@ public class Window {
         //TODO: Fix Camera rotation
         //TODO: Regions either not displaying chunk number correctly or adding unnecessary chunks to them
         //Buffer binding
-        uboId = glGenBuffers();
-        glBindBuffer(GL_UNIFORM_BUFFER, this.uboId);
+        int uboId = glGenBuffers();
+        glBindBuffer(GL_UNIFORM_BUFFER, uboId);
 
         int vboId = glGenVertexArrays();
 
@@ -667,6 +666,7 @@ public class Window {
     public static long getWindowPtr() {
         return windowPtr;
     }
+
     /*
     public static void setModelViewMatrix(Matrix4f modelViewMatrix) {
         Window.modelViewMatrix = modelViewMatrix;

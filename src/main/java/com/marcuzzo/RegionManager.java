@@ -1,28 +1,23 @@
 package com.marcuzzo;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 public class RegionManager extends GlueList<Region> {
-    public static BufferedImage textureAtlas;
-    private static Player player;
     public static List<Region> visibleRegions = new GlueList<>();
     public static Path worldDir;
-   // public static GlueList<Texture> textures = null;
-    public static TextureAtlas textures1 = null;
     public static ChunkRenderer renderer;
     public static final int RENDER_DISTANCE = 4;
     public static final int CHUNK_BOUNDS = 16;
     public static final long WORLD_SEED = 1234567890;
-    private static final Logger logger = Logger.getLogger("Logger");
 
     /**
      * The highest level object representation of a world
@@ -30,12 +25,6 @@ public class RegionManager extends GlueList<Region> {
      * @param path The path of this worlds directory
      */
     public RegionManager(Path path) {
-        //Loads texture atlas
-        try {
-            textureAtlas = ImageIO.read(new File("src/main/resources/textures/texture_atlas.png"));
-        } catch (IOException e) {
-            logger.warning("Unable to load texture atlas: " + e.getMessage());
-        }
 
         if (Window.getPlayer() == null)
             Window.setPlayer(new Player());
@@ -63,7 +52,7 @@ public class RegionManager extends GlueList<Region> {
 
             if (dirLen > 0) {
                 textureIterator.forEachRemaining(c -> {
-                    String name = c.getFileName().toString();
+               //     String name = c.getFileName().toString();
               //      String realName = name.substring(0, name.length() - 4);
                     /*
                        try {
@@ -83,9 +72,7 @@ public class RegionManager extends GlueList<Region> {
         }
     }
 
-    public static boolean getEmpty() {
-       return visibleRegions.isEmpty();
-    }
+
 
     /*
     public static Point2D getRegionCoordsWithPlayer() {
@@ -139,6 +126,7 @@ public class RegionManager extends GlueList<Region> {
     }
 
      */
+
 
 
     /**
