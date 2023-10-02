@@ -5,6 +5,8 @@ import javafx.geometry.Point3D;
 import java.io.*;
 
 public class Cube extends Point3DByComposition implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private BlockType type;
     public double f;
     public Cube(int x, int y, int z, BlockType b) {
@@ -43,6 +45,12 @@ public class Cube extends Point3DByComposition implements Serializable {
             return this.myPoint.getX() == ((Cube) o).myPoint.getX() && this.myPoint.getY() == ((Cube) o).myPoint.getY()
                     && this.myPoint.getZ() == ((Cube) o).myPoint.getZ() && this.getBlockType() == ((Cube) o).getBlockType();
         } else return false;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + this.myPoint.getX() + ", " + this.myPoint.getY() + ", " + this.myPoint.getZ() + "]";
+
     }
 
 }

@@ -4,41 +4,35 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/BlockType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkTransitionEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/GlueList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/MouseInput.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/OpenSimplex.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PlayerEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Point3DByComposition.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionTransitionEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureAtlas.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureRegion.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/jogl-all.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/textures/dirt.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/textures/grass_side.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/textures/grass_top.png" afterDir="false" />
+    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="initial commit">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FontRendering/FontMapping.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FontRendering/Glyph.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texture.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/FontGlyphMap512x512_Black.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/FontGlyphMap512x512_White.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/FontTextureRegions" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/textures/Sunday Mango.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/textures/test_texture16_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkTransitionEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionTransitionEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureAtlas.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureAtlas.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureRegion.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/TextureRegion.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/textures/grass_side.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/textures/grass_side.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +43,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="GLSL Shader" />
+        <option value="Enum" />
         <option value="Class" />
       </list>
     </option>
@@ -74,10 +69,11 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/mattm/Desktop/Personal/Programming/Projects/untitled/src/main/resources&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Global Libraries&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mattm/Desktop/Personal/Programming/Projects/floorDiv&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15429688&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.34541062&quot;
+    &quot;project.structure.side.proportion&quot;: &quot;0.34566474&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Debugger_Data_Views_Java&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -86,7 +82,9 @@
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\java\com\marcuzzo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\resources\textures" />
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\resources" />
+      <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\java\com\marcuzzo\FontRendering" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.marcuzzo" />
@@ -104,12 +102,12 @@
     </option>
   </component>
   <component name="RunManager">
-    <configuration name="com.marcuzzo.Main" type="Application" factoryName="Application" nameIsGenerated="true">
+    <configuration name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="17 (2)" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="com.marcuzzo.Main" />
       <module name="untitled" />
-      <option name="PROGRAM_PARAMETERS" value="-ea" />
+      <option name="PROGRAM_PARAMETERS" value="-ea -Dorg.lwjgl.util.Debug=true" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -124,6 +122,14 @@
       <option name="presentableId" value="Default" />
       <updated>1680124804260</updated>
     </task>
+    <task id="LOCAL-00001" summary="initial commit">
+      <created>1694319025604</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1694319025604</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -137,6 +143,10 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="initial commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -146,5 +156,9 @@
         </breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

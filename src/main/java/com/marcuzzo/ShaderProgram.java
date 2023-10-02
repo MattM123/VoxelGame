@@ -1,6 +1,7 @@
 package com.marcuzzo;
 
 
+import static org.burningwave.core.classes.JavaClass.use;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
@@ -8,7 +9,11 @@ public class ShaderProgram {
     private int vertexShaderId;
     private int fragmentShaderId;
 
-    public ShaderProgram() {}
+    private int value;
+
+    public ShaderProgram() {
+    }
+
     public void generateProgramID() {
         programId = glCreateProgram();
     }
@@ -23,6 +28,19 @@ public class ShaderProgram {
         fragmentShaderId = createShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
     }
 
+    /**
+     * Loads texture into shader
+     * @param varName Name of texture
+     * @param slot Texture unit to use
+     */
+    public void uploadTexture(String varName, int slot) {
+        int varLocation = glGetUniformLocation(getProgramId(), varName);
+       // glUse
+        glUniform1f(varLocation, slot);
+
+    }
+
+
     private int createShader(String shaderCode, int shaderType) {
         int shaderId = glCreateShader(shaderType);
         glShaderSource(shaderId, shaderCode);
@@ -35,6 +53,13 @@ public class ShaderProgram {
 
         glAttachShader(programId, shaderId);
         return shaderId;
+    }
+
+    //public void createUniform(String uniformName, int value) {
+     //   glUniform1i(2, value);
+   // }
+    public void setUniform(String uniformName, int value) {
+        glUniform1i(2, value);
     }
 
     public void link() {

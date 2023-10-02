@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 public class Region extends ChunkManager implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     public Rectangle regionBounds;
     private static final Logger logger = Logger.getLogger("Logger");
     private boolean didChange = false;
@@ -17,11 +19,11 @@ public class Region extends ChunkManager implements Serializable {
     /**
      * An object representing a 32x32 chunk area, 1024 chunks in total managed by a chunk manager.
      * @param x coordinate of the corner of this region
-     * @param y coordinate of the corner of this region
+     * @param z coordinate of the corner of this region
      */
-    public Region(int x, int y) {
+    public Region(int x, int z) {
         super();
-        regionBounds = new Rectangle(x, y, 512, 512);
+        regionBounds = new Rectangle(x, z, 512, 512);
 
     }
     /**
@@ -69,7 +71,6 @@ public class Region extends ChunkManager implements Serializable {
                 FSTObjectOutput out = Main.getInstance().getObjectOutput(stream);
                 out.writeObject(r, Region.class);
                 r.clear();
-            //    out.flush();
             } catch (Exception e) {
                 e.printStackTrace();
                 System.exit(-1);
@@ -78,13 +79,14 @@ public class Region extends ChunkManager implements Serializable {
     }
 
     private Region readRegion(InputStream stream) {
-        System.out.println("reading region");
-       AtomicReference<Region> r = new AtomicReference<>();
+
+        AtomicReference<Region> r = new AtomicReference<>();
         Main.executor.execute(() -> {
             FSTObjectInput in = Main.getInstance().getObjectInput(stream);
 
             try {
                 r.set((Region) in.readObject(Region.class));
+                System.out.println("Reading Region: " + r);
                 stream.close();
             } catch (Exception e) {
                 logger.warning(e.getMessage());

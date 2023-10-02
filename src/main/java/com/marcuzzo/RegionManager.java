@@ -1,9 +1,7 @@
 package com.marcuzzo;
 
-import javafx.geometry.Point2D;
-import javafx.scene.image.Image;
-import org.lwjgl.openvr.Texture;
-
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -11,8 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 public class RegionManager extends GlueList<Region> {
+    public static BufferedImage textureAtlas;
     private static Player player;
     public static List<Region> visibleRegions = new GlueList<>();
     public static Path worldDir;
@@ -22,6 +22,7 @@ public class RegionManager extends GlueList<Region> {
     public static final int RENDER_DISTANCE = 4;
     public static final int CHUNK_BOUNDS = 16;
     public static final long WORLD_SEED = 1234567890;
+    private static final Logger logger = Logger.getLogger("Logger");
 
     /**
      * The highest level object representation of a world
@@ -29,8 +30,15 @@ public class RegionManager extends GlueList<Region> {
      * @param path The path of this worlds directory
      */
     public RegionManager(Path path) {
-        if (RegionManager.player == null)
-            RegionManager.player = new Player();
+        //Loads texture atlas
+        try {
+            textureAtlas = ImageIO.read(new File("src/main/resources/textures/texture_atlas.png"));
+        } catch (IOException e) {
+            logger.warning("Unable to load texture atlas: " + e.getMessage());
+        }
+
+        if (Window.getPlayer() == null)
+            Window.setPlayer(new Player());
 
         try {
             Files.createDirectories(Paths.get(worldDir + "\\regions\\"));
@@ -40,13 +48,10 @@ public class RegionManager extends GlueList<Region> {
 
         RegionManager.worldDir = path;
 
-        //Add world origin region when creating new world
-       // enterRegion(new Region(0, 0));
-
         //load chunks in region player is in
         if (renderer == null) {
             renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
-                    RegionManager.getRegionWithPlayer().getChunkWithPlayer(), RegionManager.getPlayer());
+                    Player.getChunk());
         }
 
 
@@ -78,6 +83,9 @@ public class RegionManager extends GlueList<Region> {
         }
     }
 
+    public static boolean getEmpty() {
+       return visibleRegions.isEmpty();
+    }
 
     /*
     public static Point2D getRegionCoordsWithPlayer() {
@@ -87,17 +95,11 @@ public class RegionManager extends GlueList<Region> {
 
      */
 
-    public static Player getPlayer() {
-        return player;
-    }
-    public static void setPlayer(Player player) {
-        RegionManager.player = player;
-    }
-
-    /**
-     * Gets the region that the player currently inhabits.
-     * @return The region that the player is in
-     */
+ //   /**
+ //    * Gets the region that the player currently inhabits.
+ //    * @return The region that the player is in
+  //   */
+    /*
     public static Region getRegionWithPlayer() {
         Region playerRegion;
 
@@ -115,13 +117,15 @@ public class RegionManager extends GlueList<Region> {
         //Returns new region if one does not exist
         playerRegion = new Region((int) q.getX(), (int) q.getY());
 
-       // System.out.println("ttt");
+       //Enters region if not found in visible region list
         enterRegion(playerRegion);
 
 
         return playerRegion;
 
     }
+
+     */
 
     /*
     /**
@@ -155,7 +159,6 @@ public class RegionManager extends GlueList<Region> {
             if (!Arrays.stream(regionFiles).toList().isEmpty()) {
                 FileOutputStream f = new FileOutputStream(Arrays.stream(regionFiles).toList().get(0));
                 ObjectOutputStream o = new ObjectOutputStream(f);
-
                 Main.executor.execute(() -> {
                     try {
                         o.writeObject(r);
@@ -166,7 +169,7 @@ public class RegionManager extends GlueList<Region> {
                     }
                 });
                 visibleRegions.remove(r);
-                System.out.println("[Exiting Region] " + r);
+                System.out.println("[Exiting Region1] " + r);
             }
             //If region file does not already exist
             else {
@@ -182,7 +185,7 @@ public class RegionManager extends GlueList<Region> {
                     }
                 });
                 visibleRegions.remove(r);
-                System.out.println("[Exiting Region] " + r);
+                System.out.println("[Exiting Region2] " + r);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,68 +196,83 @@ public class RegionManager extends GlueList<Region> {
      * Generates or loads an already generated region from filesystem when the players
      * render distance intersects with the regions bounds.
      */
-    public static void enterRegion(Region r) {
+    public static Region enterRegion(Region r) {
         //If region is already visible
         if (visibleRegions.contains(r)) {
-           // System.out.println(r + " already entered. Skipping.");
-          //  r.updateChunks();
-            return;
+            return r;
         }
 
         //Gets region from files if it's written to file but not visible
         try {
+            //Check if region is already in files
             File[] regionFiles = new File(worldDir + "\\regions\\").listFiles((dir, name) ->
                     name.equals((int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat"));
 
+            //Get region from files if it exists
             Region match = visibleRegions.stream().filter(p -> p.regionBounds.getX() == r.regionBounds.getX()
                     && p.regionBounds.getY() == r.regionBounds.getY()).findFirst().orElse(
                     new Region((int) r.regionBounds.getX(), (int) r.regionBounds.getY()));
 
             assert regionFiles != null;
-            if (!visibleRegions.contains(match) && !Arrays.stream(regionFiles).toList().isEmpty()) {
+            if (!visibleRegions.contains(match) && regionFiles.length > 0) {
+
                 FileInputStream f = new FileInputStream(worldDir + "\\regions\\"
                         + (int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat");
                 AtomicReference<Region> q = new AtomicReference<>();
                 ObjectInputStream o = new ObjectInputStream(f);
+
+
                 Main.executor.execute(() -> {
                     try {
                         q.set((Region) o.readObject());
                         f.close();
                         o.close();
                     } catch (Exception ignored) {
+                    //    System.out.println("Error Message: " +  ignored.getMessage());
+                    //    ignored.printStackTrace();
                     }
                 });
                 if (q.get() != null && !visibleRegions.contains(q.get())) {
                     visibleRegions.add(q.get());
-                    System.out.println("[Entering Region] " + r);
-               //     q.get().updateChunks();
-                    return;
+                    System.out.println("[Entering Region1] " + r);
+                    return q.get();
                 }
             }
 
             //if region is not visible and not written to files creates new region
-            else if (!visibleRegions.contains(match) || Arrays.stream(regionFiles).toList().isEmpty()) {
+            else if (!visibleRegions.contains(match) && regionFiles.length == 0) {
                 visibleRegions.add(r);
-                System.out.println("[Entering Region] " + r);
-             //   r.updateChunks();
-                return;
+                System.out.println("[Entering Region2] " + r);
+                return r;
             }
 
         } catch (Exception e) {
             if (!visibleRegions.contains(r)) {
                 visibleRegions.add(r);
-                System.out.println("[Entering Region] " + r);
-            //    r.updateChunks();
-                return;
+                System.out.println("[Entering Region3] " + r);
+                return r;
             }
         }
         if (!visibleRegions.contains(r)) {
-            System.out.println("[Entering Region] " + r);
+            System.out.println("[Entering Region4] " + r);
             Region q = new Region((int) r.regionBounds.getX(), (int) r.regionBounds.getY());
+
+            //Adds chunks to new empty region
+            List<Chunk> chunks = ChunkRenderer.getChunksToRender();
+            for (Chunk chunk : chunks) {
+                if (chunk.getRegion().regionBounds.x == r.regionBounds.getX()
+                        && chunk.getRegion().regionBounds.getY() == r.regionBounds.getY()) {
+                    q.add(chunk);
+                }
+            }
+
             visibleRegions.add(q);
+            return q;
         }
+        return r;
 
     }
+
 
     /**
      * Updates the regions surrounding the player and reads them from file if in render distance.
@@ -264,21 +282,27 @@ public class RegionManager extends GlueList<Region> {
 
         //Updates regions within render distance
         ChunkRenderer.getChunksToRender();
-
+        List<Region> updatedRegions = ChunkRenderer.getRegions();
 
         if (visibleRegions.size() > 0) {
-            for (int i = 0; i < visibleRegions.size(); i++) {
-                leaveRegion(visibleRegions.get(i));
-            }
-            for (int i = 0; i < ChunkRenderer.getRegions().size(); i++) {
-                enterRegion(ChunkRenderer.getRegions().get(i));
+            System.out.println("[Updating Regions...]");
+
+            //Retrieves from file or generates any region that is visible
+            for (int i = 0; i < updatedRegions.size(); i++) {
+                if (!visibleRegions.contains(updatedRegions.get(i)))
+                    enterRegion(updatedRegions.get(i));
+
             }
 
+            //Write to file and de-render any regions that are no longer visible
             for (int i = 0; i < visibleRegions.size(); i++) {
-                visibleRegions.get(i).updateChunks();
+                if (!updatedRegions.contains(visibleRegions.get(i))) {
+                    //System.out.println("UPR: " + updatedRegions.get(i));
+                    // if (visibleRegions.get(i).regionBounds.getY() % 512 == 0 && visibleRegions.get(i).regionBounds.getX() % 512 == 0) {
+                    //    System.out.println(updatedRegions.get(i).regionBounds.getX()  + "           " + updatedRegions.get(i).regionBounds.getY() );
+                    leaveRegion(visibleRegions.get(i));
+                }
             }
         }
-
-       // System.out.println("Visible regions: " + visibleRegions);
     }
 }

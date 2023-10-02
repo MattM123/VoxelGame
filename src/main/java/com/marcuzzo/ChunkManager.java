@@ -1,6 +1,6 @@
 package com.marcuzzo;
 
-import org.apache.commons.lang3.ArrayUtils;
+import imgui.ImGui;
 import org.fxyz3d.geometry.Point3D;
 
 import java.io.Serializable;
@@ -10,9 +10,9 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
     public final int RENDER_DISTANCE = RegionManager.RENDER_DISTANCE;
    // public static ChunkRenderer renderer;
     private final PointCompare pointCompare = new PointCompare();
+    private int counter = 0;
 
     public ChunkManager() {
-
     }
 
     /**
@@ -20,25 +20,25 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @return The chunk that the player is in
      */
     public Chunk getChunkWithPlayer() {
-        int x = (int) Window.getPlayer().getPosition().x;
+        int x = (int) Player.getPosition().x;
         int xLowerLimit = ((x / RegionManager.CHUNK_BOUNDS) * RegionManager.CHUNK_BOUNDS);
         int xUpperLimit = xLowerLimit + RegionManager.CHUNK_BOUNDS;
 
-        int z = (int) Window.getPlayer().getPosition().z;
+        int z = (int) Player.getPosition().z;
         int zLowerLimit = ((z / RegionManager.CHUNK_BOUNDS) * RegionManager.CHUNK_BOUNDS);
         int zUpperLimit = zLowerLimit + RegionManager.CHUNK_BOUNDS;
 
         //Calculates chunk coordinates player inhabits
         int chunkXCoord = (x - xLowerLimit > xUpperLimit - x ? xUpperLimit : xLowerLimit);
-        int chunkYCoord = (z - zLowerLimit > zUpperLimit - z ? zUpperLimit : zLowerLimit);
+        int chunkZCoord = (z - zLowerLimit > zUpperLimit - z ? zUpperLimit : zLowerLimit);
 
 
-        Region r = RegionManager.getRegionWithPlayer();
-        Chunk c =  r.getChunkWithLocation(new Point3D(chunkXCoord, chunkYCoord, 0));
+        Region r = Player.getRegion();
+        Chunk c =  r.getChunkWithLocation(new Point3D(chunkXCoord, chunkZCoord, 0));
 
         if (c == null) {
-            Chunk d = new Chunk().initialize(chunkXCoord, chunkYCoord, 0);
-            RegionManager.getRegionWithPlayer().add(d);
+            Chunk d = new Chunk().initialize(chunkXCoord, chunkZCoord, 0);
+            Player.getRegion().add(d);
                 return d;
         }
         return c;
@@ -61,75 +61,15 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * Also removes chunks from world that are no longer in render distance.
      */
     public void updateChunks() {
-        RegionManager.getRegionWithPlayer();
-        if (RegionManager.renderer == null)
-            RegionManager.renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
-                    RegionManager.getRegionWithPlayer().getChunkWithPlayer(), Window.getPlayer());
+       // if (RegionManager.renderer == null)
+        //    RegionManager.renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
+       //             RegionManager.getRegionWithPlayer().getChunkWithPlayer(), Window.getPlayer());
 
         GlueList<Chunk> chunks = ChunkRenderer.getChunksToRender();
-        float[] vertices = new float[0];
 
         for (Chunk c : chunks) {
             Main.executor.execute(c::updateMesh);
-            vertices = ArrayUtils.addAll(c.getZPlanarPoints(), vertices);
         }
-
-
-/*
-            //Removes chunks no longer in render distance and frees the memory
-            for (Chunk chunk : cList) {
-                Platform.runLater(() -> {
-
-                    if (cList.parallelStream().filter(c -> c.equalsLocation(chunk)).findFirst().orElse(null) != null)
-                        world.getChildren().remove(chunk);
-                });
-            }
-
-            //Adds chunk to world if it is not visible
-            for (Chunk chunk : cList) {
-                Platform.runLater(() -> {
-                    try {
-                        chunk.updateMesh();
-                        world.getChildren().add(chunk);
-                    } catch (IllegalArgumentException ignored) {
-                    }
-              });
-            }
-
-            /*
-                //Gets regions that are within render distance
-                for (Chunk c : cList) {
-                    MainApplication.executor.execute(() -> {
-                        if (!rList.contains(c.getRegion()))
-                            rList.add(c.getRegion());
-                    });
-                }
-
-
-
-                //Updates regions to render
-                List<Region> visible = RegionManager.visibleRegions;
-                if (visible.size() > 0) {
-                    if (rList.isEmpty()) {
-                        rList.addAll(RegionManager.getSpawnRegions());
-                    }
-
-                    Platform.runLater(() -> {
-                        //First leave regions no longer in render distance
-                        for (Region r : visible) {
-                            if (!rList.contains(r))
-                                RegionManager.leaveRegion(r);
-                        }
-                        System.out.println(rList.toString());
-                        //Then enter new regions within render distances
-                        for (Region r : rList) {
-                            if (!visible.contains(r))
-                                RegionManager.enterRegion(r);
-                        }
-                    });
-                }
-
-             */
     }
 
     /**
@@ -141,6 +81,8 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @return Returns the chunk object that was just inserted into the list.
      */
     public Chunk binaryInsertChunkWithLocation(int l, int r, Point3D c) {
+
+        counter++;
 
         if (this.isEmpty()) {
             Chunk q = new Chunk().initialize((int) c.getX(), (int) c.getY(), (int) c.getZ());
@@ -221,7 +163,7 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @param l The farthest left index of the list
      * @param r The farthest right index of the list
      * @param c The chunk location to search for.
-     * @return Returns the chunk if found.
+     * @return Returns the chunk if found. Else null.
      */
     public Chunk binarySearchChunkWithLocation(int l, int r, Point3D c) {
         if (r >= l) {
@@ -229,9 +171,6 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
 
             // If the element is present at the middle
             if (pointCompare.compare(c, this.get(mid).getLocation()) == 0) {
-              //  System.out.println("CHUNK SEARCH SIZE: " + this.size);
-             //   System.out.println("LEFT: " + l + " MID: " + mid + " RIGHT: " + r);
-             //   System.out.println(this.get(mid));
                 return this.get(mid);
             }
 

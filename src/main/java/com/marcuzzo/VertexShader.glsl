@@ -1,15 +1,19 @@
 #version 330 core
 
-uniform mat4 modelViewProjectionMatrix;
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 color;
-//layout(location = 2) in vec3 normal;
+layout(location = 1) in vec4 aColor;
+layout (location = 2) in vec2 aTexCoords;
 
-//out vec3 vertexColor;
-//out vec3 vertexNormal;
+uniform mat4 modelViewProjectionMatrix;
+
+
+out vec4 fColor;
+out vec2 fTexCoords;
+
+
 
 void main() {
     gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
- //   vertexColor = color;
-  //  vertexNormal = normal;
+    fColor = aColor;
+    fTexCoords = aTexCoords;
 }
