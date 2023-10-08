@@ -1,5 +1,6 @@
 package com.marcuzzo;
 
+import com.marcuzzo.Texturing.BlockType;
 import javafx.geometry.Point3D;
 
 import java.io.*;

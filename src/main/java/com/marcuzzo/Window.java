@@ -1,5 +1,8 @@
 package com.marcuzzo;
 
+import com.marcuzzo.Texturing.BlockType;
+import com.marcuzzo.Texturing.TextureCoordinateStore;
+import com.marcuzzo.Texturing.TextureLoader;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.app.Application;
@@ -62,6 +65,7 @@ public class Window {
     public final float MOUSE_SENSITIVITY = 0.04f;
     private final MouseInput mouseInput = new MouseInput();
     private Vector3f playerInc = new Vector3f(0f, 0f, 0f);
+
     public Window(ImGuiLayer layer, ShaderProgram shaderProgram) {
         if (player == null)
             player = new Player();
@@ -75,7 +79,7 @@ public class Window {
         initImGui();
         imGuiGlfw.init(windowPtr, true);
         imGuiGl3.init();
-        TextureLoader.initTextureAtlas();
+    //    TextureLoader.initTextureAtlas();
     }
     public void destroy() {
         shaderProgram.cleanup();
@@ -268,7 +272,7 @@ public class Window {
 
             // Render the menu/world
             if (loadedWorld == null) {
-                angle += 0.01f;
+                angle += 0.015f;
                 renderMenu();
             }
             else {
@@ -304,50 +308,56 @@ public class Window {
      */
     private void renderMenu() {
         // Define the vertices and colors of the cube
-
         glEnable(GL_PRIMITIVE_RESTART);
         glPrimitiveRestartIndex(80000);
 
-        //TODO: Figure out how tf to render a cube with GL_TRIANGLE_STRIP preferably
+
+        TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
+        TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
+        TextureCoordinateStore grassLeft = BlockType.GRASS.getLeftCoords();
+        TextureCoordinateStore grassRight = BlockType.GRASS.getRightCoords();
+        TextureCoordinateStore grassTop = BlockType.GRASS.getTopCoords();
+        TextureCoordinateStore grassBott = BlockType.GRASS.getBottomCoords();
+
+
         float[] vertices = {
                 //Position (X, Y, Z)    Color (R, G, B, A)          Texture (U, V)
 
                 // Front face
-                -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,     0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
-                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
-
+                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomLeft()[0], grassFront.getBottomLeft()[1],
+                0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomRight()[0], grassFront.getBottomRight()[1],
+                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopLeft()[0], grassFront.getTopLeft()[1],
+                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopRight()[0], grassFront.getTopRight()[1],
 
                 // Back face
-                -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f,     0.0f, 1.0f, 0.0f,  1.0f,    1.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 1.0f,  1.0f,    0.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomLeft()[0], grassBack.getBottomLeft()[1],
+                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomRight()[0], grassBack.getBottomRight()[1],
+                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
 
-                // Left face
-                -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+                // Left face. Rendering sideways for some reason
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
+                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
+                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
+                -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
 
-                // Right face
-                0.5f, -0.5f, -0.5f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,     0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+                // Right face. Rendering sideways for some reason
+                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
+                0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
+                0.5f,  0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopLeft()[0], grassRight.getTopLeft()[1],
 
                 // Top face
-                -0.5f, 0.5f, -0.5f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,     0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
-                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomLeft()[0], grassTop.getBottomLeft()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomRight()[0], grassTop.getBottomRight()[1],
+                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopLeft()[0], grassTop.getTopLeft()[1],
+                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopRight()[0], grassTop.getTopRight()[1],
 
                 // Bottom face
-                -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-                0.5f,  -0.5f, -0.5f,    0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 1.0f,
-                0.5f,  -0.5f,  0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     1.0f, 1.0f
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomLeft()[0], grassBott.getBottomLeft()[1],
+                0.5f,  -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomRight()[0], grassBott.getBottomRight()[1],
+                -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopLeft()[0], grassBott.getTopLeft()[1],
+                0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
         };
 
 
@@ -369,46 +379,8 @@ public class Window {
 
         };
 
-        //Loading texture image
-       // String path = "src/main/resources/textures/grass_side.png";
-       // IntBuffer width = BufferUtils.createIntBuffer(1);
-       // IntBuffer height = BufferUtils.createIntBuffer(1);
-      //  IntBuffer channels = BufferUtils.createIntBuffer(1);
-      //  ByteBuffer image = stbi_load(path, width, height, channels, 0);
 
-        //Binding texture ID
-        /*
-        int texId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texId);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-
-        if (image != null) {
-            //Loads image to GPU
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0),
-                    0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-            //Frees memory containing image
-            stbi_image_free(image);
-        } else {
-            logger.warning("Texture could not be loaded from " + path);
-        }
-
-         */
-
-
-
-      TextureLoader.loadTexture(Texture.getByteBufferTexture(Texture.GRASS_SIDE));
-
-       // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0),
-        //        0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
+      TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
 
         /*==================================
         Buffer binding and loading
@@ -467,7 +439,7 @@ public class Window {
 
         // Set up the model-view matrix for rotation
         modelViewMatrix = new Matrix4f();
-        modelViewMatrix.translate(new Vector3f(0.0f, 0.0f, -2.0f));
+        modelViewMatrix.translate(new Vector3f(0.0f, 0f, -2.0f));
         modelViewMatrix.rotate(angle, new Vector3f(0.2f, 1.0f, 0.2f));
 
 

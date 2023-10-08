@@ -1,5 +1,6 @@
 package com.marcuzzo;
 
+import com.marcuzzo.Texturing.BlockType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.fxyz3d.geometry.Point3D;
 import org.fxyz3d.shapes.polygon.PolygonMeshView;
@@ -91,7 +92,6 @@ public class Chunk extends PolygonMeshView implements Serializable {
                         cubes.add(c);
                     if (c.f <= 0.00 && y1 >= heightMap[xCount][zCount] - caveStart)
                         cubes.add(c);
-
 
                     zCount++;
                     if (zCount > CHUNK_BOUNDS - 1)
