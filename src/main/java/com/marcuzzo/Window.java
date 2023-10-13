@@ -23,8 +23,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -79,7 +79,6 @@ public class Window {
         initImGui();
         imGuiGlfw.init(windowPtr, true);
         imGuiGl3.init();
-    //    TextureLoader.initTextureAtlas();
     }
     public void destroy() {
         shaderProgram.cleanup();
@@ -114,8 +113,7 @@ public class Window {
             System.exit(-1);
         }
 
-
-        String glslVersion = "#version 130";
+        
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
@@ -134,7 +132,6 @@ public class Window {
         GL.createCapabilities();
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-       // initPlayer();
         modelViewMatrix = Window.getPlayer().getModelViewMatrix();
         modelViewMatrix.translate(new Vector3f(0.0f, 0.0f, -2.0f));
         glfwSetKeyCallback(windowPtr, (window, key, scancode, action, mods) -> {
@@ -272,7 +269,7 @@ public class Window {
 
             // Render the menu/world
             if (loadedWorld == null) {
-                angle += 0.015f;
+                angle += 0.007f;
                 renderMenu();
             }
             else {
@@ -380,8 +377,6 @@ public class Window {
         };
 
 
-      TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
-
         /*==================================
         Buffer binding and loading
         ====================================*/
@@ -400,6 +395,7 @@ public class Window {
         glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
         // Create the indices and upload
+
         IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
         elementBuffer.put(elementArray).flip();
 
@@ -454,22 +450,26 @@ public class Window {
         // Enable the vertex attribute pointers
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
 
 
         /*==================================
         Drawing
         ====================================*/
+        TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
         glDrawElements(GL_TRIANGLE_STRIP, elementArray.length, GL_UNSIGNED_INT, 0);
+        vertexBuffer.clear();
+        elementBuffer.clear();
 
         //Unbind everything
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         glBindVertexArray(0);
         TextureLoader.unbind();
     }
 
     private void renderWorld() {
-
         //TODO: Fix Camera rotation
         //TODO: Regions either not displaying chunk number correctly or adding unnecessary chunks to them
         //Buffer binding
@@ -499,12 +499,14 @@ public class Window {
         }
 
         //Updates the chunks to render only when the player has moved into a new chunk
+        /*
         GlueList<Chunk> chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
         if (!Player.getRegion().getChunkWithPlayer().getLocation().equals(globalPlayerChunk.getLocation())) {
             globalPlayerChunk = Player.getRegion().getChunkWithPlayer();
             ChunkRenderer.setPlayerChunk(globalPlayerChunk);
             chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
         }
+         */
 
 
         int posSize = 3;
@@ -593,13 +595,13 @@ public class Window {
     }
     /**
      * Loads vertex and fragment shaders
-     * @param filePath filepath of glsl file
-     * @return String containing glsl sourcecode
      */
-    private static String loadShaderFromFile(String filePath) {
+
+    private String loadShaderFromFile(String filePath) {
+        Path path = Paths.get(filePath);
+
         try {
-            byte[] encodedBytes = Files.readAllBytes(Paths.get(filePath));
-            return new String(encodedBytes, StandardCharsets.UTF_8);
+            return Files.readString(path);
         } catch (IOException e) {
             e.printStackTrace();
         }
