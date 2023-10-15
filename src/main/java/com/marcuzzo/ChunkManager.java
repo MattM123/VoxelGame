@@ -1,16 +1,12 @@
 package com.marcuzzo;
 
-import imgui.ImGui;
 import org.fxyz3d.geometry.Point3D;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class ChunkManager extends GlueList<Chunk> implements Serializable {
-    public final int RENDER_DISTANCE = RegionManager.RENDER_DISTANCE;
-   // public static ChunkRenderer renderer;
     private final PointCompare pointCompare = new PointCompare();
-    private int counter = 0;
 
     public ChunkManager() {
     }
@@ -56,10 +52,7 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
         return binarySearchChunkWithLocation(0, this.size() - 1, loc);
     }
 
-    /**
-     * Updates the chunks surrounding the player to be added to the world if in renderer distance.
-     * Also removes chunks from world that are no longer in render distance.
-     */
+/*
     public void updateChunks() {
        // if (RegionManager.renderer == null)
         //    RegionManager.renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
@@ -71,6 +64,7 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
             Main.executor.execute(c::updateMesh);
         }
     }
+ */
 
     /**
      * Uses binary search to search for an index to insert a new chunk at.
@@ -81,8 +75,6 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @return Returns the chunk object that was just inserted into the list.
      */
     public Chunk binaryInsertChunkWithLocation(int l, int r, Point3D c) {
-
-        counter++;
 
         if (this.isEmpty()) {
             Chunk q = new Chunk().initialize((int) c.getX(), (int) c.getY(), (int) c.getZ());

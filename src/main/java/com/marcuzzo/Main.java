@@ -1,7 +1,6 @@
 package com.marcuzzo;
 
 import org.burningwave.core.assembler.StaticComponentContainer;
-import org.lwjgl.Version;
 import org.nustaq.serialization.FSTConfiguration;
 
 import java.nio.file.Files;
@@ -10,10 +9,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-    private static final ShaderProgram shaderProgram = new ShaderProgram();
+    public static final ShaderProgram shaderProgram = new ShaderProgram();
     public static Window window;
     public static String root = System.getenv("APPDATA") + "/.voxelGame/";
-    public static ExecutorService executor = Executors.newFixedThreadPool(20, Thread::new);
+    public static ExecutorService executor = Executors.newFixedThreadPool(10, Thread::new);
 
     public static FSTConfiguration getInstance() {
         StaticComponentContainer.Modules.exportAllToAll();
@@ -23,7 +22,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+    //    System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
         //Creating game directory if it does not exist
         try {
@@ -32,11 +31,11 @@ public class Main {
             e.printStackTrace();
         }
 
-        window = new Window(new ImGuiLayer(), shaderProgram);
+        window = new Window(new ImGuiLayer());
         window.init();
         shaderProgram.generateProgramID();
         window.run();
-        window.destroy();
+        Window.destroy();
 
     }
 }

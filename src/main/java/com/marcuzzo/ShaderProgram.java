@@ -1,15 +1,12 @@
 package com.marcuzzo;
 
 
-import static org.burningwave.core.classes.JavaClass.use;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
     private int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
-
-    private int value;
 
     public ShaderProgram() {
     }
@@ -55,13 +52,6 @@ public class ShaderProgram {
         return shaderId;
     }
 
-    //public void createUniform(String uniformName, int value) {
-     //   glUniform1i(2, value);
-   // }
-    public void setUniform(String uniformName, int value) {
-        glUniform1i(2, value);
-    }
-
     public void link() {
         glLinkProgram(programId);
 
@@ -103,6 +93,8 @@ public class ShaderProgram {
     public void cleanup() {
         unbind();
         if (programId != 0) {
+            glDeleteShader(vertexShaderId);
+            glDeleteShader(fragmentShaderId);
             glDeleteProgram(programId);
         }
     }

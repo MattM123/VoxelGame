@@ -12,8 +12,7 @@ import imgui.glfw.ImGuiImplGlfw;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.Callbacks;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -26,7 +25,9 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
+import static com.marcuzzo.Main.shaderProgram;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -42,17 +43,17 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * It's recommended to use {@link Application}, but this class could be extended directly as well.
  * When extended, life-cycle methods should be called manually.
  */
-public class Window {
 
-    private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
-    private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+public class Window {
+    private static final Logger logger = Logger.getLogger("Logger");
+    public static final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
+    public static final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     private static long windowPtr;
     private final ImGuiLayer layer;
     private float angle = 0.0f;
     private final float FOV = (float) Math.toRadians(60.0f);
     private static Matrix4f projectionMatrix;
     private static Matrix4f modelViewMatrix;
-    private static ShaderProgram shaderProgram;
     //X pos of window
     private int windowWidth = 0;
     //Y pos of window
@@ -65,31 +66,32 @@ public class Window {
     public final float MOUSE_SENSITIVITY = 0.04f;
     private final MouseInput mouseInput = new MouseInput();
     private Vector3f playerInc = new Vector3f(0f, 0f, 0f);
+    private int vaoID;
+    private int vboID;
+    private int eboID;
 
-    public Window(ImGuiLayer layer, ShaderProgram shaderProgram) {
+    public Window(ImGuiLayer layer) {
         if (player == null)
             player = new Player();
         this.layer = layer;
-        Window.shaderProgram = shaderProgram;
     }
     public void init() {
         initWindow();
         glfwMakeContextCurrent(windowPtr);
         GL.createCapabilities();
+
+        mouseInput.init();
         initImGui();
-        imGuiGlfw.init(windowPtr, true);
+        imGuiGlfw.init(windowPtr, false);
         imGuiGl3.init();
     }
-    public void destroy() {
+    public static void destroy() {
+        glfwMakeContextCurrent(NULL);
         shaderProgram.cleanup();
         imGuiGl3.dispose();
         imGuiGlfw.dispose();
         ImGui.destroyContext();
-        ImGui.destroyPlatformWindows();
-        Callbacks.glfwFreeCallbacks(windowPtr);
-        glfwDestroyWindow(windowPtr);
-        glfwTerminate();
-        System.out.println("Program terminated");
+        TextureLoader.unbind();
     }
     private void initWindow() {
         //Getting screen size
@@ -113,13 +115,16 @@ public class Window {
             System.exit(-1);
         }
 
-        
+
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         windowPtr = glfwCreateWindow(effectiveScreenArea.width, effectiveScreenArea.height, "Main Window", NULL, NULL);
+
+        // Set the window close callback
+        GLFW.glfwSetWindowCloseCallback(windowPtr, new WindowCloseCallback());
 
         if (windowPtr == NULL) {
             System.out.println("Unable to create window");
@@ -147,11 +152,8 @@ public class Window {
             }
         });
 
-        //Setup cursor callbacks
-        mouseInput.init();
-
         // Get the thread stack and push a new frame
-        try ( MemoryStack stack = stackPush() ) {
+        try (MemoryStack stack = stackPush() ) {
             IntBuffer pWidth = stack.mallocInt(1); // int*
             IntBuffer pHeight = stack.mallocInt(1); // int*
 
@@ -295,178 +297,181 @@ public class Window {
 
     }
 
-    /**
-     * |\--------|\
-     * | \       | \
-     * |__\======|__\
-     * \  |      \  |
-     *  \ |       \ |
-     *   \|________\|
-     */
+    private void cleanupBuffers() {
+        // Delete VAO, VBO, and EBO
+        glDeleteVertexArrays(vaoID);
+        glDeleteBuffers(vboID);
+        glDeleteBuffers(eboID);
+    }
+
+
+
     private void renderMenu() {
-        // Define the vertices and colors of the cube
-        glEnable(GL_PRIMITIVE_RESTART);
-        glPrimitiveRestartIndex(80000);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+
+            // Define the vertices and colors of the cube
+            glEnable(GL_PRIMITIVE_RESTART);
+            glPrimitiveRestartIndex(80000);
 
 
-        TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
-        TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
-        TextureCoordinateStore grassLeft = BlockType.GRASS.getLeftCoords();
-        TextureCoordinateStore grassRight = BlockType.GRASS.getRightCoords();
-        TextureCoordinateStore grassTop = BlockType.GRASS.getTopCoords();
-        TextureCoordinateStore grassBott = BlockType.GRASS.getBottomCoords();
+            TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
+            TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
+            TextureCoordinateStore grassLeft = BlockType.GRASS.getLeftCoords();
+            TextureCoordinateStore grassRight = BlockType.GRASS.getRightCoords();
+            TextureCoordinateStore grassTop = BlockType.GRASS.getTopCoords();
+            TextureCoordinateStore grassBott = BlockType.GRASS.getBottomCoords();
 
 
-        float[] vertices = {
-                //Position (X, Y, Z)    Color (R, G, B, A)          Texture (U, V)
+            float[] vertices = {
+                    //Position (X, Y, Z)    Color (R, G, B, A)          Texture (U, V)
 
-                // Front face
-                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomLeft()[0], grassFront.getBottomLeft()[1],
-                0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomRight()[0], grassFront.getBottomRight()[1],
-                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopLeft()[0], grassFront.getTopLeft()[1],
-                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopRight()[0], grassFront.getTopRight()[1],
+                    // Front face
+                    -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomLeft()[0], grassFront.getBottomLeft()[1],
+                    0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomRight()[0], grassFront.getBottomRight()[1],
+                    -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopLeft()[0], grassFront.getTopLeft()[1],
+                    0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopRight()[0], grassFront.getTopRight()[1],
 
-                // Back face
-                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomLeft()[0], grassBack.getBottomLeft()[1],
-                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomRight()[0], grassBack.getBottomRight()[1],
-                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
-                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
+                    // Back face
+                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomLeft()[0], grassBack.getBottomLeft()[1],
+                    0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomRight()[0], grassBack.getBottomRight()[1],
+                    -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
+                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
 
-                // Left face. Rendering sideways for some reason
-                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
-                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
-                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
-                -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
+                    // Left face. Rendering sideways for some reason
+                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
+                    -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
+                    -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
+                    -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
 
-                // Right face. Rendering sideways for some reason
-                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
-                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
-                0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
-                0.5f,  0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopLeft()[0], grassRight.getTopLeft()[1],
+                    // Right face. Rendering sideways for some reason
+                    0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
+                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
+                    0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
+                    0.5f,  0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopLeft()[0], grassRight.getTopLeft()[1],
 
-                // Top face
-                -0.5f, 0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomLeft()[0], grassTop.getBottomLeft()[1],
-                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomRight()[0], grassTop.getBottomRight()[1],
-                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopLeft()[0], grassTop.getTopLeft()[1],
-                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopRight()[0], grassTop.getTopRight()[1],
+                    // Top face
+                    -0.5f, 0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomLeft()[0], grassTop.getBottomLeft()[1],
+                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomRight()[0], grassTop.getBottomRight()[1],
+                    -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopLeft()[0], grassTop.getTopLeft()[1],
+                    0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopRight()[0], grassTop.getTopRight()[1],
 
-                // Bottom face
-                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomLeft()[0], grassBott.getBottomLeft()[1],
-                0.5f,  -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomRight()[0], grassBott.getBottomRight()[1],
-                -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopLeft()[0], grassBott.getTopLeft()[1],
-                0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
-        };
-
-
-
-        // Declares the Elements Array, where the indices to be drawn are stored
-        int[] elementArray = {
-                //Front face
-                0, 1, 2, 3, 80000,
-                //Back face
-                4, 5, 6, 7, 80000,
-                //Left face
-                8, 9, 10, 11, 80000,
-                //Right face
-                12, 13, 14, 15, 80000,
-                //Top face
-                16, 17, 18, 19, 80000,
-                //Bottom face
-                20, 21, 22, 23, 80000
-
-        };
+                    // Bottom face
+                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomLeft()[0], grassBott.getBottomLeft()[1],
+                    0.5f,  -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomRight()[0], grassBott.getBottomRight()[1],
+                    -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopLeft()[0], grassBott.getTopLeft()[1],
+                    0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
+            };
 
 
-        /*==================================
-        Buffer binding and loading
-        ====================================*/
 
-        // Create VAO
-        int vaoID = glGenVertexArrays();
-        glBindVertexArray(vaoID);
+            // Declares the Elements Array, where the indices to be drawn are stored
+            int[] elementArray = {
+                    //Front face
+                    0, 1, 2, 3, 80000,
+                    //Back face
+                    4, 5, 6, 7, 80000,
+                    //Left face
+                    8, 9, 10, 11, 80000,
+                    //Right face
+                    12, 13, 14, 15, 80000,
+                    //Top face
+                    16, 17, 18, 19, 80000,
+                    //Bottom face
+                    20, 21, 22, 23, 80000
 
-        // Create a float buffer of vertices
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        vertexBuffer.put(vertices).flip();
-
-        // Create VBO upload the vertex buffer
-        int vboID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-        // Create the indices and upload
-
-        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
-        elementBuffer.put(elementArray).flip();
-
-        // Create EBO upload the element buffer
-        int eboID = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
-        // Bind the VAO that we're using
-        glBindVertexArray(vaoID);
-
-        /*=====================================
-        Vertex attribute definitions for shader
-        ======================================*/
-        int posSize = 3;
-        int colorSize = 4;
-        int uvSize = 2;
-        int floatSizeBytes = 4;
-        int vertexSizeBytes = (posSize + colorSize + uvSize) * floatSizeBytes;
+            };
 
 
-        //Position
-        glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
-        glEnableVertexAttribArray(0);
-
-        //Color
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
-        glEnableVertexAttribArray(1);
-
-        //Texture
-        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
-        glEnableVertexAttribArray(2);
-
-        /*==================================
-        View Matrix setup
-        ====================================*/
-
-        // Set up the model-view matrix for rotation
-        modelViewMatrix = new Matrix4f();
-        modelViewMatrix.translate(new Vector3f(0.0f, 0f, -2.0f));
-        modelViewMatrix.rotate(angle, new Vector3f(0.2f, 1.0f, 0.2f));
+            /*==================================
+            Buffer binding and loading
+            ====================================*/
+            vboID = glGenBuffers();
+            eboID = glGenBuffers();
+            vaoID = glGenVertexArrays();
 
 
-        // Set up the model-view-projection matrix
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(modelViewMatrix);
+            //populate buffer -> load to GPU -> free buffers
+            glBindVertexArray(vaoID);
 
-        // Pass the model-view-projection matrix to the shader as a uniform
-        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
-        glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
+            //Vertices
+            FloatBuffer vertexBuffer = stack.mallocFloat(vertices.length);
+            vertexBuffer.put(vertices).flip();
+
+            // Create VBO upload the vertex buffer
+            glBindBuffer(GL_ARRAY_BUFFER, vboID);
+            glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+
+            //Elements
+            IntBuffer elementBuffer = stack.mallocInt(elementArray.length);
+            elementBuffer.put(elementArray).flip();
+
+            // Create EBO upload the element buffer
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
 
-        // Enable the vertex attribute pointers
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
+            /*=====================================
+            Vertex attribute definitions for shader
+            ======================================*/
+            int posSize = 3;
+            int colorSize = 4;
+            int uvSize = 2;
+            int floatSizeBytes = 4;
+            int vertexSizeBytes = (posSize + colorSize + uvSize) * floatSizeBytes;
+
+            //Position
+            glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
+            glEnableVertexAttribArray(0);
+
+            //Color
+            glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
+            glEnableVertexAttribArray(1);
+
+            //Texture
+            glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
+            glEnableVertexAttribArray(2);
+
+            /*==================================
+            View Matrix setup
+            ====================================*/
+
+            // Set up the model-view matrix for rotation
+            modelViewMatrix = new Matrix4f();
+            modelViewMatrix.translate(new Vector3f(0.0f, 0f, -2.0f));
+            modelViewMatrix.rotate(angle, new Vector3f(0.2f, 1.0f, 0.2f));
 
 
-        /*==================================
-        Drawing
-        ====================================*/
-        TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
-        glDrawElements(GL_TRIANGLE_STRIP, elementArray.length, GL_UNSIGNED_INT, 0);
-        vertexBuffer.clear();
-        elementBuffer.clear();
+            // Set up the model-view-projection matrix
+            Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(modelViewMatrix);
 
-        //Unbind everything
+            // Pass the model-view-projection matrix to the shader as a uniform
+            int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
+            glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
+
+
+            // Enable the vertex attribute pointers
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
+
+
+            /*==================================
+            Drawing
+            ====================================*/
+            TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
+            glDrawElements(GL_TRIANGLE_STRIP, elementArray.length, GL_UNSIGNED_INT, 0);
+
+        } catch(Exception e) {
+            logger.warning(e.getMessage());
+        }
+
+        //Unbind and cleanup everything
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
-        glBindVertexArray(0);
         TextureLoader.unbind();
+        glBindVertexArray(0);
+        cleanupBuffers();
     }
 
     private void renderWorld() {
@@ -538,8 +543,6 @@ public class Window {
 
         //TODO: create faces by iterating through heightmap??
         //TODO: Region not generating when moving into new region?
-
-
 
 
         /*==================================
@@ -631,12 +634,6 @@ public class Window {
     public static void setLoadedWorld(RegionManager r) {
         loadedWorld = r;
     }
-    /*
-    public static RegionManager getLoadedWorld() {
-        return loadedWorld;
-    }
-
-     */
     public static long getWindowPtr() {
         return windowPtr;
     }
