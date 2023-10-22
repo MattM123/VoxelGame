@@ -1,5 +1,6 @@
 package com.marcuzzo;
-import org.fxyz3d.geometry.Point3D;
+
+import org.joml.Vector3f;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -9,19 +10,19 @@ import java.util.Comparator;
  * this object is used to compare chunks to be sorted for use with
  * binary search algorithms.
  */
-public class PointCompare implements Comparator<Point3D>, Serializable {
+public class PointCompare implements Comparator<Vector3f>, Serializable {
     @Override
-    public int compare(Point3D a, Point3D b) {
-        if (a.getX() < b.getX()) {
+    public int compare(Vector3f a, Vector3f b) {
+        if (a.x < b.x) {
             return -1;
         }
-        else if (a.getX() > b.getX()) {
+        else if (a.x > b.x) {
             return 1;
         }
 
-        //x coordinates are equal
+        //If x coordinates are equal
         else {
-            return Float.compare(a.getY(), b.getY());
+            return Float.compare(a.z, b.z);
         }
 
     }

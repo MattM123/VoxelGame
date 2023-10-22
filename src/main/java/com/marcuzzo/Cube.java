@@ -1,56 +1,77 @@
 package com.marcuzzo;
 
 import com.marcuzzo.Texturing.BlockType;
-import javafx.geometry.Point3D;
 
 import java.io.*;
 
-public class Cube extends Point3DByComposition implements Serializable {
+public class Cube implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private BlockType type;
-    public double f;
-    public Cube(int x, int y, int z, BlockType b) {
-        super(x, y, z);
+    private float f;
+    private float x;
+    private float y;
+    private float z;
+
+    //TODO: Redo cube class to be less complicated and memory intensive
+    public Cube(float x, float y, float z, BlockType b) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
         type = b;
     }
-    public Cube(int x, int y, int z) {
-        super(x, y, z);
+    public Cube(float x, float y, float z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     public BlockType getBlockType() {
         return type;
     }
-    @Override
+
     public void setBlockType(BlockType type) {
         this.type = type;
     }
 
+    public float getF() {
+        return f;
+    }
+    public float getY() {
+        return y;
+    }
+    public float getX() {
+        return x;
+    }
+    public float getZ() { return z; }
+
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeDouble(myPoint.getX());
-        out.writeDouble(myPoint.getY());
-        out.writeDouble(myPoint.getZ());
+        out.writeFloat(getX());
+        out.writeFloat(getY());
+        out.writeFloat(getZ());
         out.writeObject(getBlockType());
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        myPoint = new Point3D(in.readDouble(), in.readDouble(), in.readDouble());
+        this.x = in.readFloat();
+        this.y = in.readFloat();
+        this.z = in.readFloat();
         type = (BlockType) in.readObject();
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Cube) {
-            return this.myPoint.getX() == ((Cube) o).myPoint.getX() && this.myPoint.getY() == ((Cube) o).myPoint.getY()
-                    && this.myPoint.getZ() == ((Cube) o).myPoint.getZ() && this.getBlockType() == ((Cube) o).getBlockType();
+            return this.getX() == ((Cube) o).getX() && this.getY() == ((Cube) o).getY()
+                    && this.getZ() == ((Cube) o).getZ() && this.getBlockType() == ((Cube) o).getBlockType();
         } else return false;
     }
 
     @Override
     public String toString() {
-        return "[" + this.myPoint.getX() + ", " + this.myPoint.getY() + ", " + this.myPoint.getZ() + "]";
+        return "[" + this.getX() + ", " + this.getY() + ", " + this.getZ() + "]";
 
     }
 

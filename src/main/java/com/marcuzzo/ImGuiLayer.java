@@ -1,11 +1,9 @@
 package com.marcuzzo;
 
-import imgui.*;
+import imgui.ImGui;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiConfigFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
-import imgui.type.ImFloat;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -14,10 +12,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public class ImGuiLayer {
@@ -30,7 +26,7 @@ public class ImGuiLayer {
     public void imgui() {
 
 
-        if (RegionManager.visibleRegions.isEmpty()) {
+        if (Window.isMenuRendered()) {
             ImGui.begin("World List", new ImBoolean(true));
 
 
@@ -90,11 +86,12 @@ public class ImGuiLayer {
             =====================================*/
             ImGui.begin("Debug", new ImBoolean(false), ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize);
 
-            ImGui.setWindowSize(400, 400);
+            ImGui.setWindowPos(parentX, parentY);
+            ImGui.setWindowSize(parentWidth / 4.0f, parentHeight / 2.0f);
             ImGui.pushStyleColor(ImGuiCol.WindowBg,1.0f, 0.0f, 0.0f, 1.0f);
             ImGui.text("Position: X:" + Player.getPosition().x() + " Y:" + Player.getPosition().y() + " Z:" + Player.getPosition().z());
-            ImGui.text("Region: " + Player.getRegion());
-            ImGui.text(Player.getChunk().toString());
+            ImGui.text("Region: " + Player.getRegionWithPlayer());
+            ImGui.text(Player.getChunkWithPlayer().toString());
             ImGui.text("RenderedChunks Size: " + ChunkRenderer.getChunksToRender().size);
 
             ImGui.popStyleColor();

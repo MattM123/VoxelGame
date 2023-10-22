@@ -4,19 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="Simplified loadShaderFromFile">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/WindowCloseCallback.java" afterDir="false" />
+    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="Fixed region coordinates not being properly calculated">
       <change afterPath="$PROJECT_DIR$/src/main/resources/textures/Sunday Mango.ttf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/MouseInput.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/MouseInput.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/Texture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/Texture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/TextureLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/TextureLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/jogl-all.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +98,7 @@
       <option name="MAIN_CLASS_NAME" value="com.marcuzzo.Main" />
       <module name="untitled" />
       <option name="PROGRAM_PARAMETERS" value="-ea " />
-      <option name="VM_PARAMETERS" value="-Xmx2g -Xms50m -Dorg.lwjgl.util.Debug=true -XX:MaxDirectMemorySize=2g -Dorg.lwjgl.util.DebugAllocator=true" />
+      <option name="VM_PARAMETERS" value="-Xmx2g -Xms50m -Dorg.lwjgl.util.Debug=true -XX:MaxDirectMemorySize=4g -Dorg.lwjgl.util.DebugAllocator=true" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -184,7 +185,14 @@
       <option name="project" value="LOCAL" />
       <updated>1697209615433</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Fixed massive memory leak and included proper exit calls">
+      <created>1697337762482</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1697337762482</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -205,7 +213,9 @@
     <MESSAGE value="Texture proof of concept" />
     <MESSAGE value="File update" />
     <MESSAGE value="Simplified loadShaderFromFile" />
-    <option name="LAST_COMMIT_MESSAGE" value="Simplified loadShaderFromFile" />
+    <MESSAGE value="Fixed massive memory leak and included proper exit calls" />
+    <MESSAGE value="Fixed region coordinates not being properly calculated" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed region coordinates not being properly calculated" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

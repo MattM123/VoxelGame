@@ -1,6 +1,6 @@
 package com.marcuzzo;
 
-import org.fxyz3d.geometry.Point3D;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.List;
 
 public class ChunkRenderer {
     private static int renderDistance;
-    private static int bounds = RegionManager.CHUNK_BOUNDS;
+    public static int bounds = RegionManager.CHUNK_BOUNDS;
     private static Chunk playerChunk;
-    public static final List<Region> regions = new GlueList<>();
+    private static final List<Region> regions = new GlueList<>();
 
     /**
      *
@@ -23,9 +23,14 @@ public class ChunkRenderer {
         ChunkRenderer.renderDistance = renderDistance;
         ChunkRenderer.bounds = bounds;
         ChunkRenderer.playerChunk = playerChunk;
-       // ChunkRenderer.player = player;
     }
 
+    public static void setBounds(int bounds) {
+        ChunkRenderer.bounds = bounds;
+    }
+    public static void setRenderDistance(int renderDistance) {
+        ChunkRenderer.renderDistance = renderDistance;
+    }
     public static void setPlayerChunk(Chunk c) {
         playerChunk = c;
     }
@@ -39,31 +44,30 @@ public class ChunkRenderer {
      */
     private static List<Chunk> getQuadrantChunks() {
         List<Chunk> chunks = new ArrayList<>();
-
-        Region r = Player.getRegion();
+        Region playerRegion = Player.getRegionWithPlayer();
 
         //Top left quadrant
-        Point3D TLstart = new Point3D(playerChunk.getLocation().getX() - bounds, playerChunk.getLocation().getY() + bounds, 0);
-        for (int x = (int) TLstart.getX(); x > TLstart.getX() - (renderDistance * bounds); x -= bounds) {
-            for (int y = (int) TLstart.getY(); y < TLstart.getY() + (renderDistance * bounds); y += bounds) {
-                Chunk c = r.getChunkWithLocation(new Point3D(x, y, 0));
+        Vector3f TLstart = new Vector3f(playerChunk.getLocation().x - bounds, playerChunk.getLocation().z + bounds, 0);
+        for (int x = (int) TLstart.x; x > TLstart.x - (renderDistance * bounds); x -= bounds) {
+            for (int z = (int) TLstart.z; z < TLstart.z + (renderDistance * bounds); z += bounds) {
+                Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
                 if (c != null) {
                     chunks.add(c);
                     if (!regions.contains(c.getRegion()))
                         regions.add(c.getRegion());
                 } else {
                     //Attempts to get chunk from region
-                    Chunk d = r.getChunkWithLocation(new Point3D(x, y, 0));
+                    Chunk get = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
 
                     //If chunk already exists in region, add it
-                    if (d != null) {
-                        chunks.add(d);
-                        if (!regions.contains(d.getRegion()))
-                            regions.add(d.getRegion());
+                    if (get != null) {
+                        chunks.add(get);
+                        if (!regions.contains(get.getRegion()))
+                            regions.add(get.getRegion());
 
                         //If chunk does not already exist in region, create and add it
                     } else {
-                        Chunk w = r.binaryInsertChunkWithLocation(0, r.size() - 1, new Point3D(x, y, 0));
+                        Chunk w = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, new Vector3f(x, 0, z));
                         if (w != null) {
                             chunks.add(w);
 
@@ -77,27 +81,28 @@ public class ChunkRenderer {
 
 
             //Top right quadrant
-            Point3D TRStart = new Point3D(playerChunk.getLocation().getX() + bounds, playerChunk.getLocation().getY() + bounds, 0);
-            for (int x = (int) TRStart.getX(); x < TRStart.getX() + (renderDistance * bounds); x += bounds) {
-                for (int y = (int) TRStart.getY(); y < TRStart.getY() + (renderDistance * bounds); y += bounds) {
-                    Chunk c = r.getChunkWithLocation(new Point3D(x, y, 0));
+            Vector3f TRStart = new Vector3f(playerChunk.getLocation().x + bounds, playerChunk.getLocation().z + bounds, 0);
+            for (int x = (int) TRStart.x; x < TRStart.x + (renderDistance * bounds); x += bounds) {
+                for (int z = (int) TRStart.z; z < TRStart.z + (renderDistance * bounds); z += bounds) {
+                    Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
                     if (c != null) {
                         chunks.add(c);
                         if (!regions.contains(c.getRegion()))
                             regions.add(c.getRegion());
                     } else {
                         //Attempts to get chunk from region
-                        Chunk d = r.getChunkWithLocation(new Point3D(x, y, 0));
+                        Chunk get = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
 
                         //If chunk already exists in region, add it
-                        if (d != null) {
-                            chunks.add(d);
-                            if (!regions.contains(d.getRegion()))
-                                regions.add(d.getRegion());
+                        if (get != null) {
+                            chunks.add(get);
+                            if (!regions.contains(get.getRegion()))
+                                regions.add(get.getRegion());
+
 
                             //If chunk does not already exist in region, create and add it
                         } else {
-                            Chunk w = r.binaryInsertChunkWithLocation(0, r.size() - 1, new Point3D(x, y, 0));
+                            Chunk w = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, new Vector3f(x, 0, z));
                             if (w != null) {
                                 chunks.add(w);
 
@@ -110,27 +115,27 @@ public class ChunkRenderer {
             }
 
             //Bottom right quadrant
-            Point3D BRStart = new Point3D(playerChunk.getLocation().getX() - bounds, playerChunk.getLocation().getY() - bounds, 0);
-            for (int x = (int) BRStart.getX(); x > BRStart.getX() - (renderDistance * bounds); x -= bounds) {
-                for (int y = (int) BRStart.getY(); y > BRStart.getY() - (renderDistance * bounds); y -= bounds) {
-                    Chunk c = r.getChunkWithLocation(new Point3D(x, y, 0));
+            Vector3f BRStart = new Vector3f(playerChunk.getLocation().x - bounds, playerChunk.getLocation().z - bounds, 0);
+            for (int x = (int) BRStart.x; x > BRStart.x - (renderDistance * bounds); x -= bounds) {
+                for (int z = (int) BRStart.z; z > BRStart.z - (renderDistance * bounds); z -= bounds) {
+                    Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
                     if (c != null) {
                         chunks.add(c);
                         if (!regions.contains(c.getRegion()))
                             regions.add(c.getRegion());
                     } else {
                         //Attempts to get chunk from region
-                        Chunk d = r.getChunkWithLocation(new Point3D(x, y, 0));
+                        Chunk get = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
 
                         //If chunk already exists in region, add it
-                        if (d != null) {
-                            chunks.add(d);
-                            if (!regions.contains(d.getRegion()))
-                                regions.add(d.getRegion());
+                        if (get != null) {
+                            chunks.add(get);
+                            if (!regions.contains(get.getRegion()))
+                                regions.add(get.getRegion());
 
                             //If chunk does not already exist in region, create and add it
                         } else {
-                            Chunk w = r.binaryInsertChunkWithLocation(0, r.size() - 1, new Point3D(x, y, 0));
+                            Chunk w = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, new Vector3f(x, 0, z));
                             if (w != null) {
                                 chunks.add(w);
 
@@ -143,27 +148,28 @@ public class ChunkRenderer {
             }
 
             //Bottom left quadrant
-            Point3D BLStart = new Point3D(playerChunk.getLocation().getX() + bounds, playerChunk.getLocation().getY() - bounds, 0);
-            for (int x = (int) BLStart.getX(); x < BLStart.getX() + (renderDistance * bounds); x += bounds) {
-                for (int y = (int) BLStart.getY(); y > BLStart.getY() - (renderDistance * bounds); y -= bounds) {
-                    Chunk c = r.getChunkWithLocation(new Point3D(x, y, 0));
+            Vector3f BLStart = new Vector3f(playerChunk.getLocation().x + bounds, playerChunk.getLocation().z - bounds, 0);
+            for (int x = (int) BLStart.x; x < BLStart.x + (renderDistance * bounds); x += bounds) {
+                for (int z = (int) BLStart.z; z > BLStart.z - (renderDistance * bounds); z -= bounds) {
+                    Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
                     if (c != null) {
                         chunks.add(c);
                         if (!regions.contains(c.getRegion()))
                             regions.add(c.getRegion());
                     } else {
                         //Attempts to get chunk from region
-                        Chunk d = r.getChunkWithLocation(new Point3D(x, y, 0));
+                        Chunk get = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
 
                         //If chunk already exists in region, add it
-                        if (d != null) {
-                            chunks.add(d);
-                            if (!regions.contains(d.getRegion()))
-                                regions.add(d.getRegion());
+                        if (get != null) {
+                            chunks.add(get);
+                            if (!regions.contains(get.getRegion()))
+                                regions.add(get.getRegion());
+
 
                         //If chunk does not already exist in region, create and add it
                         } else {
-                            Chunk w = r.binaryInsertChunkWithLocation(0, r.size() - 1, new Point3D(x, y, 0));
+                            Chunk w = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, new Vector3f(x, 0, z));
                             if (w != null) {
                                 chunks.add(w);
 
@@ -185,22 +191,23 @@ public class ChunkRenderer {
      */
     private static ArrayList<Chunk> getCardinalChunks() {
         ArrayList<Chunk> chunks = new ArrayList<>();
-        Region r = Player.getRegion();
+        Region playerRegion = Player.getRegionWithPlayer();
+
         //Positive X
         for (int i = 1; i <= renderDistance; i++) {
-            Point3D p = new Point3D(playerChunk.getLocation().getX() + (i * bounds), playerChunk.getLocation().getY(), 0);
-            Chunk c =  r.getChunkWithLocation(p);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x + (i * bounds), playerChunk.getLocation().z, 0);
+            Chunk c =  playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
                 if (!regions.contains(c.getRegion()))
                     regions.add(c.getRegion());
             } else {
                 //Search for existing chunk in region
-                Chunk get = Player.getRegion().binarySearchChunkWithLocation(0, Player.getRegion().size - 1, p);
+                Chunk get = playerRegion.binarySearchChunkWithLocation(0, playerRegion.size() - 1, p);
 
                 //If chunk does not exist, create and add it
                 if (get == null) {
-                    Chunk d = Player.getRegion().binaryInsertChunkWithLocation(0, Player.getRegion().size() - 1, p);
+                    Chunk d = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, p);
                     if (d != null) {
                         chunks.add(d);
 
@@ -218,8 +225,8 @@ public class ChunkRenderer {
 
         //Negative X
         for (int i = 1; i <= renderDistance; i++) {
-            Point3D p = new Point3D(playerChunk.getLocation().getX() - (i * bounds), playerChunk.getLocation().getY(), 0);
-            Chunk c =  r.getChunkWithLocation(p);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x - (i * bounds), playerChunk.getLocation().z, 0);
+            Chunk c =  playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
                 if (!regions.contains(c.getRegion()))
@@ -227,11 +234,11 @@ public class ChunkRenderer {
             }
             else {
                 //Search for existing chunk in region
-                Chunk get = Player.getRegion().binarySearchChunkWithLocation(0, Player.getRegion().size - 1, p);
+                Chunk get = playerRegion.binarySearchChunkWithLocation(0, playerRegion.size() - 1, p);
 
                 //If chunk does not exist, create and add it
                 if (get == null) {
-                    Chunk d = Player.getRegion().binaryInsertChunkWithLocation(0, Player.getRegion().size() - 1, p);
+                    Chunk d = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, p);
                     if (d != null) {
                         chunks.add(d);
 
@@ -249,8 +256,8 @@ public class ChunkRenderer {
 
         //Positive Y
         for (int i = 1; i <= renderDistance; i++) {
-            Point3D p = new Point3D(playerChunk.getLocation().getX(), playerChunk.getLocation().getY() + (i * bounds), 0);
-            Chunk c = Player.getRegion().getChunkWithLocation(p);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x, playerChunk.getLocation().z + (i * bounds), 0);
+            Chunk c = playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
                 if (!regions.contains(c.getRegion()))
@@ -258,11 +265,11 @@ public class ChunkRenderer {
             }
             else {
                 //Search for existing chunk in region
-                Chunk get = Player.getRegion().binarySearchChunkWithLocation(0, Player.getRegion().size - 1, p);
+                Chunk get = playerRegion.binarySearchChunkWithLocation(0, playerRegion.size() - 1, p);
 
                 //If chunk does not exist, create and add it
                 if (get == null) {
-                    Chunk d = Player.getRegion().binaryInsertChunkWithLocation(0, Player.getRegion().size() - 1, p);
+                    Chunk d = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, p);
                     if (d != null) {
                         chunks.add(d);
 
@@ -279,8 +286,8 @@ public class ChunkRenderer {
         }
         //Negative Y
         for (int i = 1; i <= renderDistance; i++) {
-            Point3D p = new Point3D(playerChunk.getLocation().getX(), playerChunk.getLocation().getY() - (i * bounds), 0);
-            Chunk c = Player.getRegion().getChunkWithLocation(p);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x, playerChunk.getLocation().z - (i * bounds), 0);
+            Chunk c = playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
                 if (!regions.contains(c.getRegion()))
@@ -288,11 +295,11 @@ public class ChunkRenderer {
             }
             else {
                 //Search for existing chunk in region
-                Chunk get = Player.getRegion().binarySearchChunkWithLocation(0, Player.getRegion().size - 1, p);
+                Chunk get = playerRegion.binarySearchChunkWithLocation(0, playerRegion.size() - 1, p);
 
                 //If chunk does not exist, create and add it
                 if (get == null) {
-                    Chunk d = Player.getRegion().binaryInsertChunkWithLocation(0, Player.getRegion().size() - 1, p);
+                    Chunk d = playerRegion.binaryInsertChunkWithLocation(0, playerRegion.size() - 1, p);
                     if (d != null) {
                         chunks.add(d);
 

@@ -3,6 +3,7 @@ package com.marcuzzo;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
 public class Player implements Serializable {
@@ -25,7 +26,8 @@ public class Player implements Serializable {
         this.rotation = new Vector3f(0f, 0f, 0f);
         modelViewMatrix.setRotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
 
-      //  getRegionWithPlayer();
+        ChunkRenderer.setPlayerChunk(getChunkWithPlayer());
+        RegionManager.enterRegion(getRegionWithPlayer());
     }
 
     public static Vector3f getPosition() {
@@ -80,32 +82,90 @@ public class Player implements Serializable {
     }
 
 
-    public static Region getRegion() {
-        Region playerRegion;
+    /**
+     * Gets the region that the player currently inhabits.
+     * If the region doesn't exist yet, generates and adds a new region
+     * to the visible regions list
+     * @return The region that the player is in
+     */
+    public static Region getRegionWithPlayer() {
+        Region returnRegion = null;
 
-        for (Region r : RegionManager.visibleRegions) {
-            if (r.regionBounds.intersects(position.x(), position.z(), 1, 1)) {
-                   // && (int) r.regionBounds.getY() == (int) getPosition().y) {
-                return r;
+        int x = (int) Player.getPosition().x;
+        int xLowerLimit = ((x / RegionManager.REGION_BOUNDS) * RegionManager.REGION_BOUNDS);
+        int xUpperLimit;
+        if (x < 0)
+            xUpperLimit = xLowerLimit - RegionManager.REGION_BOUNDS;
+        else
+            xUpperLimit = xLowerLimit + RegionManager.REGION_BOUNDS;
+
+
+        int z = (int) Player.getPosition().z;
+        int zLowerLimit = ((z / RegionManager.REGION_BOUNDS) * RegionManager.REGION_BOUNDS);
+        int zUpperLimit;
+        if (z < 0)
+            zUpperLimit = zLowerLimit - RegionManager.REGION_BOUNDS;
+        else
+            zUpperLimit = zLowerLimit + RegionManager.REGION_BOUNDS;
+
+
+        //Calculates region coordinates player inhabits
+        int regionXCoord = xUpperLimit;
+        int regionZCoord = zUpperLimit;
+
+        for (Region region : RegionManager.visibleRegions) {
+            Rectangle2D regionBounds = region.getBounds().getBounds2D();
+            if (regionXCoord == regionBounds.getX() && regionZCoord == regionBounds.getY()) {
+                returnRegion = region;
             }
         }
 
-        //Returns new region if one does not exist
+        if (returnRegion == null)
+            returnRegion = new Region(regionXCoord, regionZCoord);
 
-
-        playerRegion = new Region((int) ((512*(Math.floor(Math.abs(Player.position.x/512))))), (int) (512*(Math.floor(Math.abs(Player.position.z/512)))));
-
-        //Enters region if not found in visible region list
-        RegionManager.enterRegion(playerRegion);
-        //RegionManager.visibleRegions.add(playerRegion);
-
-
-        return playerRegion;
-
+        return returnRegion;
     }
 
-    public static Chunk getChunk() {
-        return getRegion().getChunkWithPlayer();
+
+    /**
+     * Gets the chunk that the player currently inhabits.
+     * If the chunk doesn't exist yet, generates and adds a new chunk
+     * to the region
+     * @return The chunk that the player is in
+     */
+    public static Chunk getChunkWithPlayer() {
+        int x = (int) Player.getPosition().x;
+        int xLowerLimit = ((x / RegionManager.CHUNK_BOUNDS) * RegionManager.CHUNK_BOUNDS);
+        int xUpperLimit;
+        if (x < 0)
+            xUpperLimit = xLowerLimit - RegionManager.CHUNK_BOUNDS;
+        else
+            xUpperLimit = xLowerLimit + RegionManager.CHUNK_BOUNDS;
+
+
+        int z = (int) Player.getPosition().z;
+        int zLowerLimit = ((z / RegionManager.CHUNK_BOUNDS) * RegionManager.CHUNK_BOUNDS);
+        int zUpperLimit;
+        if (z < 0)
+            zUpperLimit = zLowerLimit - RegionManager.CHUNK_BOUNDS;
+        else
+            zUpperLimit = zLowerLimit + RegionManager.CHUNK_BOUNDS;
+
+
+        //Calculates chunk coordinates player inhabits
+        int chunkXCoord = xUpperLimit;
+        int chunkZCoord = zUpperLimit;
+
+
+        Region r = getRegionWithPlayer();
+        Chunk c =  r.getChunkWithLocation(new Vector3f(chunkXCoord, 0, chunkZCoord));
+
+        if (c == null) {
+            Chunk d = new Chunk().initialize(chunkXCoord, 0, chunkZCoord);
+            r.add(d);
+            return d;
+        }
+        return c;
     }
 
     public Matrix4f getModelViewMatrix() {

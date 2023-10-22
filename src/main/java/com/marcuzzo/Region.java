@@ -12,7 +12,9 @@ import java.util.logging.Logger;
 public class Region extends ChunkManager implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    public Rectangle regionBounds;
+
+    //TODO: use Area and Shape class instead
+    private Shape regionBounds;
     private static final Logger logger = Logger.getLogger("Logger");
     private boolean didChange = false;
 
@@ -23,7 +25,7 @@ public class Region extends ChunkManager implements Serializable {
      */
     public Region(int x, int z) {
         super();
-        regionBounds = new Rectangle(x, z, 512, 512);
+        regionBounds = new Rectangle(x, z, RegionManager.REGION_BOUNDS, RegionManager.REGION_BOUNDS);
 
     }
     /**
@@ -43,8 +45,8 @@ public class Region extends ChunkManager implements Serializable {
         return didChange;
     }
 
-    public Point2D getLocation() {
-        return new Point2D(regionBounds.x, regionBounds.y);
+    public Shape getBounds() {
+        return regionBounds;
     }
     /**
      * Writes to file only if the didChange flag of the region is true. This
@@ -104,17 +106,19 @@ public class Region extends ChunkManager implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Region) {
-            return this.regionBounds.x == ((Region) o).regionBounds.x && this.regionBounds.y == ((Region) o).regionBounds.y;
+            return this.regionBounds.getBounds2D().getX() == ((Region) o).regionBounds.getBounds2D().getX()
+                    && this.regionBounds.getBounds2D().getY() == ((Region) o).regionBounds.getBounds2D().getY();
         }
         return false;
     }
     @Override
     public String toString() {
 
-        if (super.getChunks().size() > 0 && super.getChunks() != null)
-            return "(" + super.getChunks().size() + " Chunks) Region: (" + regionBounds.getX() + ", " + regionBounds.getY() + ")";
+        if (super.size() > 0 && super.getChunks() != null)
+            return "(" + this.size() + " Chunks) Region: (" + regionBounds.getBounds2D().getX()
+                    + ", " + regionBounds.getBounds2D().getY() + ")";
         else
-            return "(Empty) Region: (" + regionBounds.getX() + ", " + regionBounds.getY() + ")";
+            return "(Empty) Region: (" + regionBounds.getBounds2D().getX() + ", " + regionBounds.getBounds2D().getY() + ")";
 
 
 

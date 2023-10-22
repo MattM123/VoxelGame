@@ -1,14 +1,11 @@
 package com.marcuzzo;
 
 import java.io.*;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RegionManager extends GlueList<Region> {
@@ -16,6 +13,7 @@ public class RegionManager extends GlueList<Region> {
     public static Path worldDir;
     public static ChunkRenderer renderer;
     public static final int RENDER_DISTANCE = 4;
+    public static final int REGION_BOUNDS = 512;
     public static final int CHUNK_BOUNDS = 16;
     public static final long WORLD_SEED = 1234567890;
 
@@ -36,96 +34,10 @@ public class RegionManager extends GlueList<Region> {
         }
 
         RegionManager.worldDir = path;
-
-        //load chunks in region player is in
-        if (renderer == null) {
-            renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
-                    Player.getChunk());
-        }
-
-
-       // Map<String, Image> textureMap = new HashMap<>();
-        try {
-            DirectoryStream<Path> textureStream = Files.newDirectoryStream(Paths.get("src/main/resources/textures"));
-            Iterator<Path> textureIterator = textureStream.iterator();
-            int dirLen = Objects.requireNonNull(new File("src/main/resources/textures").listFiles()).length;
-
-            if (dirLen > 0) {
-                textureIterator.forEachRemaining(c -> {
-               //     String name = c.getFileName().toString();
-              //      String realName = name.substring(0, name.length() - 4);
-                    /*
-                       try {
-                           textures.add(TextureIO.newTexture(TextureIO.newTextureData(GLProfile.getDefault(), new File("src/main/resources/textures/" + name), false, "png")));
-                       } catch (IOException e) {
-                           throw new RuntimeException(e);
-                       }
-
-                     */
-
-                //    textureMap.put(realName, new Image("src/main/resources/textures/" + name));
-                });
-            //    textures1 = new TextureAtlas(textureMap);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ChunkRenderer.setBounds(CHUNK_BOUNDS);
+        ChunkRenderer.setRenderDistance(RENDER_DISTANCE);
     }
 
-
-
-    /*
-    public static Point2D getRegionCoordsWithPlayer() {
-        Point2D loc = new Point2D(player.getPosition().x , player.getPosition().y);
-        return new Point2D(loc.getX() - Math.floorMod((int) loc.getX(), 512), loc.getY() - Math.floorMod((int) loc.getY(), 512));
-    }
-
-     */
-
- //   /**
- //    * Gets the region that the player currently inhabits.
- //    * @return The region that the player is in
-  //   */
-    /*
-    public static Region getRegionWithPlayer() {
-        Region playerRegion;
-
-        Point2D q = new Point2D(player.getPosition().x - Math.floorMod((int) player.getPosition().x, 512),
-                player.getPosition().y - Math.floorMod((int) player.getPosition().y, 512));
-
-
-        for (Region r : RegionManager.visibleRegions) {
-            if ((int) r.regionBounds.getX() == (int) q.getX()
-                    && (int) r.regionBounds.getY() == (int) q.getY()) {
-                return r;
-            }
-        }
-
-        //Returns new region if one does not exist
-        playerRegion = new Region((int) q.getX(), (int) q.getY());
-
-       //Enters region if not found in visible region list
-        enterRegion(playerRegion);
-
-
-        return playerRegion;
-
-    }
-
-     */
-
-    /*
-    /**
-     * Gets the coordinates of the region the player inhabits.
-     * @return The region coordinates
-     */
-    /*
-    public static Region getRegionFromLocation(int x, int y) {
-        Point2D p = new Point2D(x - Math.floorMod(x, 512), y - Math.floorMod(y, 512));
-        return new Region((int) p.getX(), (int) p.getY());
-    }
-
-     */
 
 
 
@@ -139,7 +51,7 @@ public class RegionManager extends GlueList<Region> {
     public static void leaveRegion(Region r) {
         try {
             File[] regionFiles = new File(worldDir + "\\regions\\").listFiles((dir, name) ->
-                    name.equals((int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat"));
+                    name.equals((int) r.getBounds().getBounds2D().getX() + "." + (int) r.getBounds().getBounds2D().getY() + ".dat"));
 
             //Writes region to file and removes from visibility
             //If region file already exists
@@ -162,7 +74,7 @@ public class RegionManager extends GlueList<Region> {
             //If region file does not already exist
             else {
                 FileOutputStream f = new FileOutputStream(worldDir + "\\regions\\"
-                        + (int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat");
+                        + (int) r.getBounds().getBounds2D().getX() + "." + (int) r.getBounds().getBounds2D().getY() + ".dat");
                 ObjectOutputStream o = new ObjectOutputStream(f);
                 Main.executor.execute(() -> {
                     try {
@@ -194,18 +106,18 @@ public class RegionManager extends GlueList<Region> {
         try {
             //Check if region is already in files
             File[] regionFiles = new File(worldDir + "\\regions\\").listFiles((dir, name) ->
-                    name.equals((int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat"));
+                    name.equals((int) r.getBounds().getBounds2D().getX() + "." + (int) r.getBounds().getBounds2D().getY() + ".dat"));
 
             //Get region from files if it exists
-            Region match = visibleRegions.stream().filter(p -> p.regionBounds.getX() == r.regionBounds.getX()
-                    && p.regionBounds.getY() == r.regionBounds.getY()).findFirst().orElse(
-                    new Region((int) r.regionBounds.getX(), (int) r.regionBounds.getY()));
+            Region match = visibleRegions.stream().filter(p -> p.getBounds().getBounds2D().getX() == r.getBounds().getBounds2D().getX()
+                    && p.getBounds().getBounds2D().getY()== r.getBounds().getBounds2D().getY()).findFirst().orElse(
+                    new Region((int) r.getBounds().getBounds2D().getX(), (int) r.getBounds().getBounds2D().getY()));
 
             assert regionFiles != null;
             if (!visibleRegions.contains(match) && regionFiles.length > 0) {
 
                 FileInputStream f = new FileInputStream(worldDir + "\\regions\\"
-                        + (int) r.regionBounds.getX() + "." + (int) r.regionBounds.getY() + ".dat");
+                        + (int) r.getBounds().getBounds2D().getX() + "." + (int) r.getBounds().getBounds2D().getY() + ".dat");
                 AtomicReference<Region> q = new AtomicReference<>();
                 ObjectInputStream o = new ObjectInputStream(f);
 
@@ -216,14 +128,20 @@ public class RegionManager extends GlueList<Region> {
                         f.close();
                         o.close();
                     } catch (Exception ignored) {
-                    //    System.out.println("Error Message: " +  ignored.getMessage());
-                    //    ignored.printStackTrace();
                     }
                 });
                 if (q.get() != null && !visibleRegions.contains(q.get())) {
-                    visibleRegions.add(q.get());
-                    System.out.println("[Entering Region1] " + r);
-                    return q.get();
+                    Region w = q.get();
+                    visibleRegions.add(w);
+                    System.out.println("[Entering Region1] " + w);
+
+                    //If player trying to enter an empty region
+                    if (w.isEmpty()) {
+                        System.out.println("Adding player chunk1");
+                        w.add(Player.getChunkWithPlayer());
+                    }
+
+                    return w;
                 }
             }
 
@@ -231,6 +149,12 @@ public class RegionManager extends GlueList<Region> {
             else if (!visibleRegions.contains(match) && regionFiles.length == 0) {
                 visibleRegions.add(r);
                 System.out.println("[Entering Region2] " + r);
+
+                //If player trying to enter an empty region
+                if (r.isEmpty()) {
+                    System.out.println("Adding player chunk2");
+                    r.add(Player.getChunkWithPlayer());
+                }
                 return r;
             }
 
@@ -238,20 +162,24 @@ public class RegionManager extends GlueList<Region> {
             if (!visibleRegions.contains(r)) {
                 visibleRegions.add(r);
                 System.out.println("[Entering Region3] " + r);
+
+                //If player trying to enter an empty region
+                if (r.isEmpty()) {
+                    System.out.println("Adding player chunk3");
+                    r.add(Player.getChunkWithPlayer());
+                }
                 return r;
             }
         }
         if (!visibleRegions.contains(r)) {
             System.out.println("[Entering Region4] " + r);
-            Region q = new Region((int) r.regionBounds.getX(), (int) r.regionBounds.getY());
+            //TODO: Need to get region from file instead of generating a new one
+            Region q = new Region((int) r.getBounds().getBounds2D().getX(), (int) r.getBounds().getBounds2D().getY());
 
-            //Adds chunks to new empty region
-            List<Chunk> chunks = ChunkRenderer.getChunksToRender();
-            for (Chunk chunk : chunks) {
-                if (chunk.getRegion().regionBounds.x == r.regionBounds.getX()
-                        && chunk.getRegion().regionBounds.getY() == r.regionBounds.getY()) {
-                    q.add(chunk);
-                }
+            //If player trying to enter an empty region
+            if (r.isEmpty()) {
+                System.out.println("Adding player chunk4");
+                r.add(Player.getChunkWithPlayer());
             }
 
             visibleRegions.add(q);
@@ -279,15 +207,11 @@ public class RegionManager extends GlueList<Region> {
             for (int i = 0; i < updatedRegions.size(); i++) {
                 if (!visibleRegions.contains(updatedRegions.get(i)))
                     enterRegion(updatedRegions.get(i));
-
             }
 
             //Write to file and de-render any regions that are no longer visible
             for (int i = 0; i < visibleRegions.size(); i++) {
                 if (!updatedRegions.contains(visibleRegions.get(i))) {
-                    //System.out.println("UPR: " + updatedRegions.get(i));
-                    // if (visibleRegions.get(i).regionBounds.getY() % 512 == 0 && visibleRegions.get(i).regionBounds.getX() % 512 == 0) {
-                    //    System.out.println(updatedRegions.get(i).regionBounds.getX()  + "           " + updatedRegions.get(i).regionBounds.getY() );
                     leaveRegion(visibleRegions.get(i));
                 }
             }

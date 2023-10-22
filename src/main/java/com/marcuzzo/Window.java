@@ -9,6 +9,7 @@ import imgui.app.Application;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -17,6 +18,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.awt.*;
 import java.io.IOException;
@@ -25,6 +27,9 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import static com.marcuzzo.Main.shaderProgram;
@@ -69,6 +74,8 @@ public class Window {
     private int vaoID;
     private int vboID;
     private int eboID;
+    private static boolean isMenuRendered = false;
+    private boolean isWorldRendered = false;
 
     public Window(ImGuiLayer layer) {
         if (player == null)
@@ -114,7 +121,6 @@ public class Window {
             System.out.println("Unable to initialize GLFW");
             System.exit(-1);
         }
-
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -216,6 +222,10 @@ public class Window {
         // Set the clear color (background)
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        //Enable primitive restart
+        glEnable(GL_PRIMITIVE_RESTART);
+        glPrimitiveRestartIndex(80000);
+
         while (!glfwWindowShouldClose(windowPtr)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the framebuffer
             glFlush();
@@ -272,10 +282,14 @@ public class Window {
             // Render the menu/world
             if (loadedWorld == null) {
                 angle += 0.007f;
+                isMenuRendered = true;
+                isWorldRendered = false;
                 renderMenu();
             }
             else {
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                isMenuRendered = false;
+                isWorldRendered = true;
                 renderWorld();
             }
 
@@ -308,11 +322,6 @@ public class Window {
 
     private void renderMenu() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-
-            // Define the vertices and colors of the cube
-            glEnable(GL_PRIMITIVE_RESTART);
-            glPrimitiveRestartIndex(80000);
-
 
             TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
             TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
@@ -389,8 +398,6 @@ public class Window {
             eboID = glGenBuffers();
             vaoID = glGenVertexArrays();
 
-
-            //populate buffer -> load to GPU -> free buffers
             glBindVertexArray(vaoID);
 
             //Vertices
@@ -448,12 +455,10 @@ public class Window {
             int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
             glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
-
             // Enable the vertex attribute pointers
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
             glEnableVertexAttribArray(2);
-
 
             /*==================================
             Drawing
@@ -475,43 +480,35 @@ public class Window {
     }
 
     private void renderWorld() {
-        //TODO: Fix Camera rotation
         //TODO: Regions either not displaying chunk number correctly or adding unnecessary chunks to them
-        //Buffer binding
-        int uboId = glGenBuffers();
-        glBindBuffer(GL_UNIFORM_BUFFER, uboId);
-
-        int vboId = glGenVertexArrays();
-
-
-        if (vboId > 0)
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        //TODO: A lot of chunks are generating for some reason and its eating up all the memory
 
         //playerChunk will be null when world first loads
         if (globalPlayerChunk == null)
-            globalPlayerChunk = Player.getRegion().getChunkWithPlayer();
+            globalPlayerChunk = Player.getChunkWithPlayer();
 
         //playerRegion will be null when world first loads
         if (globalPlayerRegion == null) {
-            globalPlayerRegion = Player.getRegion();
+            globalPlayerRegion = Player.getRegionWithPlayer();
             RegionManager.enterRegion(globalPlayerRegion);
-            // RegionManager.updateVisibleRegions();
         }
 
-        //Updates the regions when player moves into different region
-        if (!Player.getRegion().getLocation().equals(globalPlayerRegion.getLocation())) {
-            globalPlayerRegion = Player.getRegion();
-        }
+
 
         //Updates the chunks to render only when the player has moved into a new chunk
-        /*
         GlueList<Chunk> chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
-        if (!Player.getRegion().getChunkWithPlayer().getLocation().equals(globalPlayerChunk.getLocation())) {
-            globalPlayerChunk = Player.getRegion().getChunkWithPlayer();
+        if (!Player.getChunkWithPlayer().getLocation().equals(globalPlayerChunk.getLocation())) {
+            globalPlayerChunk = Player.getChunkWithPlayer();
             ChunkRenderer.setPlayerChunk(globalPlayerChunk);
             chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
+
+            //Updates the regions when player moves into different region
+            if (!Player.getRegionWithPlayer().equals(globalPlayerRegion)) {
+                globalPlayerRegion = Player.getRegionWithPlayer();
+                RegionManager.updateVisibleRegions();
+            }
         }
-         */
+      //  System.out.println(Player.getRegionWithPlayer());
 
 
         int posSize = 3;
@@ -535,61 +532,135 @@ public class Window {
         // Set up the model-view-projection matrix
         Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(player.getModelViewMatrix());
 
-
         // Pass the model-view-projection matrix to the shader as a uniform
         int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
         glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
 
-        //TODO: create faces by iterating through heightmap??
-        //TODO: Region not generating when moving into new region?
+        float[] vertices = new float[0];
+        int[] elements = new int[0];
 
+        //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
+        for (Chunk c : chunksToRender) {
+            Future<Map.Entry<float[], int[]>> temp;
+            temp = Main.executor.submit(() -> getChunkData(c).entrySet().stream().findFirst().orElse(null));
+            try {
+                vertices = ArrayUtils.addAll(vertices, temp.get().getKey());
+                elements = ArrayUtils.addAll(elements, temp.get().getValue());
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+            }
+        }
+
+
+        /*==================================
+        Buffer binding and loading
+        ====================================*/
+        vboID = glGenBuffers();
+        eboID = glGenBuffers();
+        vaoID = glGenVertexArrays();
+
+        glBindVertexArray(vaoID);
+
+        //Vertices
+        FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(vertices.length);
+        vertexBuffer.put(vertices).flip();
+
+        // Create VBO upload the vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+
+        //Elements
+        IntBuffer elementBuffer = MemoryUtil.memAllocInt(elements.length);
+        elementBuffer.put(elements).flip();
+
+        // Create EBO upload the element buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
+
+        // Enable the vertex attribute pointers
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
 
         /*==================================
         Drawing
         ====================================*/
-        glDrawElements(GL_TRIANGLE_STRIP, 3, GL_UNSIGNED_INT, 0);
+        TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
+        glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
 
 
-        // Unbind everything
+        //Unbind and cleanup everything
+        chunksToRender.clear();
+        MemoryUtil.memFree(elementBuffer);
+        MemoryUtil.memFree(vertexBuffer);
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        TextureLoader.unbind();
         glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-/*
-        for (Chunk chunk : chunksToRender) {
-            if (chunk.orderedPoints == null)
-                continue;
-            else
-                chunk.updateMesh();
-
-
-            //Populating mesh arrays
-            int[] firsts = new int[chunk.orderedPoints.length / 6];
-            int[] counts = new int[chunk.orderedPoints.length / 6];
-            Arrays.fill(counts, 2);
-            for (int i = 0; i < chunk.orderedPoints.length / 6; i++) {
-                firsts[i] = i * 6;
-            }
-
-            //Drawing primitives
-            glBufferData(GL_ARRAY_BUFFER, BufferUtils.createFloatBuffer(chunk.orderedPoints.length).put(chunk.orderedPoints).flip(), GL_DYNAMIC_DRAW);
-           // glDrawElements(GL_TRIANGLES, chunk.getZFaces());
-
-
-            glMultiDrawArrays(GL_TRIANGLES, firsts, counts);
-
-          //glBufferData(GL_ARRAY_BUFFER, BufferUtils.createFloatBuffer(chunk.getVertexArray().length).put(chunk.getVertexArray()).flip(), GL_STATIC_DRAW);
-          //  glDrawElements(GL_TRIANGLE_STRIP, chunk.getFaces());
-        }
-
- */
-
-
-
-
+        cleanupBuffers();
     }
 
+
+    /**
+     * For each cube in a chunk, checks the 6 adjacent cubes o calculate which
+     * block faces to render
+     */
+    public Map<float[], int[]> getChunkData(Chunk c) {
+
+        //TODO: Fix massive performance issues caused by this
+        float[] vertices = new float[0];
+        int[] elements = new int[0];
+        int elementCounter = 0;
+
+
+        //Calculate faces to render given cube origin
+        for (int i = 0; i < c.getHeightMap().size(); i++) {
+            Cube cube = c.getHeightMap().get(i);
+            Cube c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
+
+            for (Cube otherCube : c.getHeightMap()) {
+                if (otherCube.getX() == cube.getX() + 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
+                    c1 = otherCube;
+                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() + 1 && otherCube.getZ() == cube.getZ()) {
+                    c2 = otherCube;
+                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() + 1) {
+                    c3 = otherCube;
+                } else if (otherCube.getX() == cube.getX() - 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
+                    c4 = otherCube;
+                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() - 1 && otherCube.getZ() == cube.getZ()) {
+                    c5 = otherCube;
+                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() - 1) {
+                    c6 = otherCube;
+                }
+            }
+
+            //If c1 is null, positive X face should be rendered
+            if (c1 == null) {
+                float[] origin = {cube.getX() + 1, cube.getY(), cube.getZ()};
+                TextureCoordinateStore right = cube.getBlockType().getRightCoords();
+                float[] posXFace = {
+                        //Position                                  Color               Texture
+                        origin[0], origin[1] - 1, origin[2] - 1,    0f, 0f, 0f, 0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                        origin[0], origin[1], origin[2] - 1,        0f, 0f, 0f, 0f,     right.getTopRight()[0], right.getTopRight()[1],
+                        origin[0], origin[1] - 1, origin[2],        0f, 0f, 0f, 0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                        origin[0], origin[1], origin[2],            0f, 0f, 0f, 0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                };
+                int[] posXElements = {
+                        elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
+                };
+                elementCounter += 4;
+
+                vertices = ArrayUtils.addAll(vertices, posXFace);
+                elements = ArrayUtils.addAll(elements, posXElements);
+            }
+
+        }
+        Map<float[], int[]> out = new HashMap<>();
+        out.put(vertices, elements);
+        return out;
+    }
     public static Player getPlayer() {
         return Window.player;
     }
@@ -638,17 +709,8 @@ public class Window {
         return windowPtr;
     }
 
-    /*
-    public static void setModelViewMatrix(Matrix4f modelViewMatrix) {
-        Window.modelViewMatrix = modelViewMatrix;
+    public static boolean isMenuRendered() {
+        return isMenuRendered;
     }
 
-    public static Matrix4f getProjectionMatrix() {
-        return projectionMatrix;
-    }
-    public static ShaderProgram getShaders() {
-        return shaderProgram;
-    }
-
-     */
 }
