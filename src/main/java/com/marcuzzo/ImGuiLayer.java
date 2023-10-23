@@ -29,7 +29,6 @@ public class ImGuiLayer {
         if (Window.isMenuRendered()) {
             ImGui.begin("World List", new ImBoolean(true));
 
-
             ImGui.text("Choose a World");
             ImGui.sameLine(ImGui.getWindowSizeX() - 85, -1);
 
@@ -55,9 +54,6 @@ public class ImGuiLayer {
                         ImGui.button("Load World");
                         if (ImGui.isItemClicked()) {
                             RegionManager rm = new RegionManager(Paths.get(worlds + c.getFileName()));
-
-                           // System.out.println(RegionManager.visibleRegions);
-
                             RegionManager.updateVisibleRegions();
                             Window.setLoadedWorld(rm);
                         }
@@ -88,12 +84,15 @@ public class ImGuiLayer {
 
             ImGui.setWindowPos(parentX, parentY);
             ImGui.setWindowSize(parentWidth / 4.0f, parentHeight / 2.0f);
-            ImGui.pushStyleColor(ImGuiCol.WindowBg,1.0f, 0.0f, 0.0f, 1.0f);
-            ImGui.text("Position: X:" + Player.getPosition().x() + " Y:" + Player.getPosition().y() + " Z:" + Player.getPosition().z());
+            ImGui.pushStyleColor(ImGuiCol.WindowBg,1.0f, 1.0f, 0.0f, 1.0f);
+            ImGui.text("Player Position: X:" + Player.getPosition().x() + " Y:" + Player.getPosition().y() + " Z:" + Player.getPosition().z());
+            ImGui.text("Player Rotation: X:" + Player.getRotation().x() + ", Y:" + Player.getRotation().y() + ", Z:" + Player.getRotation().z());
+            ImGui.text("");
             ImGui.text("Region: " + Player.getRegionWithPlayer());
             ImGui.text(Player.getChunkWithPlayer().toString());
             ImGui.text("RenderedChunks Size: " + ChunkRenderer.getChunksToRender().size);
-
+            ImGui.text("");
+            ImGui.text("Cursor Position: " + MouseInput.getCursorPos().x + ", " + MouseInput.getCursorPos().y);
             ImGui.popStyleColor();
             ImGui.end();
 

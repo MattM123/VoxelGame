@@ -1,6 +1,7 @@
 package com.marcuzzo;
 
 import com.marcuzzo.Texturing.BlockType;
+import com.marcuzzo.Texturing.TextureCoordinateStore;
 import org.apache.commons.lang3.ArrayUtils;
 import org.fxyz3d.shapes.polygon.PolygonMeshView;
 import org.joml.Vector3f;
@@ -10,7 +11,9 @@ import org.nustaq.serialization.FSTObjectOutput;
 import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,6 +31,8 @@ public class Chunk extends PolygonMeshView implements Serializable {
     private List<Cube> heightMapPointList = new GlueList<>();
     private boolean isInitialized = false;
     private static final Logger logger = Logger.getLogger("Logger");
+    private float[] vertexCache = new float[0];
+    private int[] elementCache = new int[0];
 
     public Chunk() {
         setOnMouseClicked(mouseEvent -> {
@@ -127,7 +132,15 @@ public class Chunk extends PolygonMeshView implements Serializable {
                 points = ArrayUtils.addAll(points, coordArr);
             }
 
-
+            //Updates data caches when the chunk mesh has changed
+            Future<Map.Entry<float[], int[]>> temp;
+            temp = Main.executor.submit(() -> getChunkData().entrySet().stream().findFirst().orElse(null));
+            try {
+                vertexCache = temp.get().getKey();
+                elementCache = temp.get().getValue();
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+            }
             didChange = false;
         }
     }
@@ -253,14 +266,76 @@ public class Chunk extends PolygonMeshView implements Serializable {
         }
 
         if (returnRegion == null)
-            returnRegion = new Region(regionXCoord, regionXCoord);
+            returnRegion = new Region(regionXCoord, regionZCoord);
 
         return returnRegion;
     }
 
-    public List<Cube> getHeightMap() {
-        return heightMapPointList;
+    /**
+     * For each cube in a chunk, checks the 6 adjacent cubes to calculate which
+     * block faces to render then stores and returns this vertex and element
+     * information to send to the GPU for rendering.
+     *
+     * @return A map object consisting of the vertex and element information
+     * required to graphically render each block face
+     */
+    public Map<float[], int[]> getChunkData() {
+        float[] vertices = new float[0];
+        int[] elements = new int[0];
+        int elementCounter = 0;
+
+        if (didChange || elementCache.length == 0 || vertexCache.length == 0) {
+
+            //Calculate faces to render given cube origin
+            for (int i = 0; i < heightMapPointList.size(); i++) {
+                Cube cube = heightMapPointList.get(i);
+                Cube c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
+
+                for (Cube otherCube : heightMapPointList) {
+                    if (otherCube.getX() == cube.getX() + 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
+                        c1 = otherCube;
+                    } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() + 1 && otherCube.getZ() == cube.getZ()) {
+                        c2 = otherCube;
+                    } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() + 1) {
+                        c3 = otherCube;
+                    } else if (otherCube.getX() == cube.getX() - 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
+                        c4 = otherCube;
+                    } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() - 1 && otherCube.getZ() == cube.getZ()) {
+                        c5 = otherCube;
+                    } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() - 1) {
+                        c6 = otherCube;
+                    }
+                }
+
+                //If c1 is null, positive X face should be rendered
+                if (c1 == null) {
+                    float[] origin = {cube.getX() + 1, cube.getY(), cube.getZ()};
+                    TextureCoordinateStore right = cube.getBlockType().getRightCoords();
+                    float[] posXFace = {
+                            //Position                                  Color                       Texture
+                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 0.0f,     right.getTopRight()[0], right.getTopRight()[1],
+                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 0.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                    };
+                    int[] posXElements = {
+                            elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
+                    };
+                    elementCounter += 4;
+
+                    vertices = ArrayUtils.addAll(vertices, posXFace);
+                    elements = ArrayUtils.addAll(elements, posXElements);
+                }
+            }
+            elementCache = elements;
+            vertexCache = vertices;
+        }
+
+        Map<float[], int[]> out = new HashMap<>();
+        out.put(vertexCache, elementCache);
+        return out;
     }
+
     @Serial
     private void writeObject(ObjectOutputStream o) {
         writeChunk(o, this);
@@ -280,8 +355,6 @@ public class Chunk extends PolygonMeshView implements Serializable {
         Main.executor.execute(() -> {
             try {
                 FSTObjectOutput out = Main.getInstance().getObjectOutput(stream);
-                c.setMaterial(null);
-                c.setMesh(null);
                 out.writeObject(c, Chunk.class);
                 out.flush();
             } catch (Exception e) {
@@ -321,6 +394,6 @@ public class Chunk extends PolygonMeshView implements Serializable {
 
     @Override
     public String toString() {
-        return "Chunk: (" + location.x + "," + location.z + ")";
+        return "Chunk[" + location.x + "," + location.z + "]";
     }
 }

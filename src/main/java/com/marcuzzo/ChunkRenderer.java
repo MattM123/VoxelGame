@@ -47,7 +47,7 @@ public class ChunkRenderer {
         Region playerRegion = Player.getRegionWithPlayer();
 
         //Top left quadrant
-        Vector3f TLstart = new Vector3f(playerChunk.getLocation().x - bounds, playerChunk.getLocation().z + bounds, 0);
+        Vector3f TLstart = new Vector3f(playerChunk.getLocation().x - bounds, 0, playerChunk.getLocation().z + bounds);
         for (int x = (int) TLstart.x; x > TLstart.x - (renderDistance * bounds); x -= bounds) {
             for (int z = (int) TLstart.z; z < TLstart.z + (renderDistance * bounds); z += bounds) {
                 Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
@@ -81,7 +81,7 @@ public class ChunkRenderer {
 
 
             //Top right quadrant
-            Vector3f TRStart = new Vector3f(playerChunk.getLocation().x + bounds, playerChunk.getLocation().z + bounds, 0);
+            Vector3f TRStart = new Vector3f(playerChunk.getLocation().x + bounds, 0,  playerChunk.getLocation().z + bounds);
             for (int x = (int) TRStart.x; x < TRStart.x + (renderDistance * bounds); x += bounds) {
                 for (int z = (int) TRStart.z; z < TRStart.z + (renderDistance * bounds); z += bounds) {
                     Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
@@ -115,7 +115,7 @@ public class ChunkRenderer {
             }
 
             //Bottom right quadrant
-            Vector3f BRStart = new Vector3f(playerChunk.getLocation().x - bounds, playerChunk.getLocation().z - bounds, 0);
+            Vector3f BRStart = new Vector3f(playerChunk.getLocation().x - bounds, 0, playerChunk.getLocation().z - bounds);
             for (int x = (int) BRStart.x; x > BRStart.x - (renderDistance * bounds); x -= bounds) {
                 for (int z = (int) BRStart.z; z > BRStart.z - (renderDistance * bounds); z -= bounds) {
                     Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
@@ -148,7 +148,7 @@ public class ChunkRenderer {
             }
 
             //Bottom left quadrant
-            Vector3f BLStart = new Vector3f(playerChunk.getLocation().x + bounds, playerChunk.getLocation().z - bounds, 0);
+            Vector3f BLStart = new Vector3f(playerChunk.getLocation().x + bounds, 0, playerChunk.getLocation().z - bounds);
             for (int x = (int) BLStart.x; x < BLStart.x + (renderDistance * bounds); x += bounds) {
                 for (int z = (int) BLStart.z; z > BLStart.z - (renderDistance * bounds); z -= bounds) {
                     Chunk c = playerRegion.getChunkWithLocation(new Vector3f(x, 0, z));
@@ -195,7 +195,7 @@ public class ChunkRenderer {
 
         //Positive X
         for (int i = 1; i <= renderDistance; i++) {
-            Vector3f p = new Vector3f(playerChunk.getLocation().x + (i * bounds), playerChunk.getLocation().z, 0);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x + (i * bounds), 0,  playerChunk.getLocation().z);
             Chunk c =  playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
@@ -225,7 +225,7 @@ public class ChunkRenderer {
 
         //Negative X
         for (int i = 1; i <= renderDistance; i++) {
-            Vector3f p = new Vector3f(playerChunk.getLocation().x - (i * bounds), playerChunk.getLocation().z, 0);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x - (i * bounds), 0, playerChunk.getLocation().z);
             Chunk c =  playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
@@ -256,7 +256,7 @@ public class ChunkRenderer {
 
         //Positive Y
         for (int i = 1; i <= renderDistance; i++) {
-            Vector3f p = new Vector3f(playerChunk.getLocation().x, playerChunk.getLocation().z + (i * bounds), 0);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x, 0, playerChunk.getLocation().z + (i * bounds));
             Chunk c = playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);
@@ -286,7 +286,7 @@ public class ChunkRenderer {
         }
         //Negative Y
         for (int i = 1; i <= renderDistance; i++) {
-            Vector3f p = new Vector3f(playerChunk.getLocation().x, playerChunk.getLocation().z - (i * bounds), 0);
+            Vector3f p = new Vector3f(playerChunk.getLocation().x, 0, playerChunk.getLocation().z - (i * bounds));
             Chunk c = playerRegion.getChunkWithLocation(p);
             if (c != null) {
                 chunks.add(c);

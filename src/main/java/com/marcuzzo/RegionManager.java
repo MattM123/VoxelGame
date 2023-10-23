@@ -135,12 +135,6 @@ public class RegionManager extends GlueList<Region> {
                     visibleRegions.add(w);
                     System.out.println("[Entering Region1] " + w);
 
-                    //If player trying to enter an empty region
-                    if (w.isEmpty()) {
-                        System.out.println("Adding player chunk1");
-                        w.add(Player.getChunkWithPlayer());
-                    }
-
                     return w;
                 }
             }
@@ -149,12 +143,6 @@ public class RegionManager extends GlueList<Region> {
             else if (!visibleRegions.contains(match) && regionFiles.length == 0) {
                 visibleRegions.add(r);
                 System.out.println("[Entering Region2] " + r);
-
-                //If player trying to enter an empty region
-                if (r.isEmpty()) {
-                    System.out.println("Adding player chunk2");
-                    r.add(Player.getChunkWithPlayer());
-                }
                 return r;
             }
 
@@ -162,12 +150,6 @@ public class RegionManager extends GlueList<Region> {
             if (!visibleRegions.contains(r)) {
                 visibleRegions.add(r);
                 System.out.println("[Entering Region3] " + r);
-
-                //If player trying to enter an empty region
-                if (r.isEmpty()) {
-                    System.out.println("Adding player chunk3");
-                    r.add(Player.getChunkWithPlayer());
-                }
                 return r;
             }
         }
@@ -175,13 +157,6 @@ public class RegionManager extends GlueList<Region> {
             System.out.println("[Entering Region4] " + r);
             //TODO: Need to get region from file instead of generating a new one
             Region q = new Region((int) r.getBounds().getBounds2D().getX(), (int) r.getBounds().getBounds2D().getY());
-
-            //If player trying to enter an empty region
-            if (r.isEmpty()) {
-                System.out.println("Adding player chunk4");
-                r.add(Player.getChunkWithPlayer());
-            }
-
             visibleRegions.add(q);
             return q;
         }

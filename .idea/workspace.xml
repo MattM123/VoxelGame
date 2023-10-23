@@ -8,15 +8,14 @@
       <change afterPath="$PROJECT_DIR$/src/main/resources/textures/Sunday Mango.ttf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/FragShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/FragShader.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/MouseInput.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/MouseInput.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Point3DByComposition.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/VertexShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/VertexShader.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,6 +67,7 @@
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\java\com\marcuzzo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\java\com\marcuzzo\Texturing" />
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\resources" />
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\resources\textures" />
       <recent name="C:\Users\mattm\Desktop\Personal\Programming\Projects\untitled\src\main\java\com\marcuzzo\FontRendering" />
@@ -192,7 +192,14 @@
       <option name="project" value="LOCAL" />
       <updated>1697337762482</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Fixed region coordinates not being properly calculated">
+      <created>1697946260544</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1697946260544</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

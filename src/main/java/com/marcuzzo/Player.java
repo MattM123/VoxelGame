@@ -9,9 +9,8 @@ import java.io.Serializable;
 public class Player implements Serializable {
     private final Matrix4f modelViewMatrix;
     private static Vector3f position = null;
-    private final Vector3f rotation;
-    private final Vector3f cameraUp = new Vector3f(0, 1, 0);
-    private final float rotationAngle = 5f;
+    private static Vector3f rotation = null;
+  //  private final Vector3f cameraUp = new Vector3f(0, 1, 0);
 
     /**
      * Default player object is initialized at a position of 0,0,0 within
@@ -23,8 +22,8 @@ public class Player implements Serializable {
         position = new Vector3f(0f, 0f, 0f);
         modelViewMatrix.setTranslation(position);
 
-        this.rotation = new Vector3f(0f, 0f, 0f);
-        modelViewMatrix.setRotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
+        rotation = new Vector3f(0f, 0f, 0f);
+        modelViewMatrix.setRotationXYZ(rotation.x, rotation.y, rotation.z);
 
         ChunkRenderer.setPlayerChunk(getChunkWithPlayer());
         RegionManager.enterRegion(getRegionWithPlayer());
@@ -46,12 +45,12 @@ public class Player implements Serializable {
 
     public void movePosition(float offsetX, float offsetY, float offsetZ) {
         if ( offsetZ != 0 ) {
-            position.x += (float)Math.sin(Math.toRadians(this.rotation.y)) * -1.0f * offsetZ;
-            position.z += (float)Math.cos(Math.toRadians(this.rotation.y)) * offsetZ;
+            position.x += (float)Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y)) * offsetZ;
         }
         if ( offsetX != 0) {
-            position.x += (float)Math.sin(Math.toRadians(this.rotation.y - 90)) * -1.0f * offsetX;
-            position.z += (float)Math.cos(Math.toRadians(this.rotation.y - 90)) * offsetX;
+            position.x += (float)Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y - 90)) * offsetX;
         }
         position.y += offsetY;
         modelViewMatrix.setTranslation(position);
@@ -72,13 +71,18 @@ public class Player implements Serializable {
      */
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
-        this.rotation.x += offsetX;
-        this.rotation.y += offsetY;
-        this.rotation.z += offsetZ;
+        rotation.x += offsetX;
+        rotation.y += offsetY;
+        rotation.z += offsetZ;
 
-      //  modelViewMatrix.rotate(rotationAngle, this.rotation.x, this.rotation.y, this.rotation.z);
-        modelViewMatrix.setRotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
+        float rotationAngle = 5f;
+        modelViewMatrix.rotate(rotationAngle, rotation.x, rotation.y, rotation.z);
+        //modelViewMatrix.setRotationXYZ(rotation.x, rotation.y, rotation.z);
         //System.out.println(modelViewMatrix.rotation);
+    }
+
+    public static Vector3f getRotation() {
+        return rotation;
     }
 
 

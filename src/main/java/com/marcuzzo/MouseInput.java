@@ -9,9 +9,9 @@ public class MouseInput {
 
     private final Vector2d previousPos;
 
-    private final Vector2d currentPos;
+    private static Vector2d currentPos = null;
 
-    private final Vector2f displVec;
+    private static Vector2f displVec = null;
 
     private boolean inWindow = false;
 
@@ -37,7 +37,10 @@ public class MouseInput {
         });
     }
 
-    public Vector2f getDisplVec() {
+    public static Vector2d getCursorPos() {
+        return currentPos;
+    }
+    public static Vector2f getDisplVec() {
         return displVec;
     }
 

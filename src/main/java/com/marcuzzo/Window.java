@@ -27,7 +27,6 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -75,7 +74,6 @@ public class Window {
     private int vboID;
     private int eboID;
     private static boolean isMenuRendered = false;
-    private boolean isWorldRendered = false;
 
     public Window(ImGuiLayer layer) {
         if (player == null)
@@ -194,11 +192,11 @@ public class Window {
         //========================
 
         //Load the vertex shader from file
-        String vertexShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/VertexShader.glsl");
+        String vertexShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/Texturing/VertexShader.glsl");
         shaderProgram.createVertexShader(vertexShaderSource);
 
         // Load the fragment shader from file
-        String fragmentShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/FragShader.glsl");
+        String fragmentShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/Texturing/FragShader.glsl");
         shaderProgram.createFragmentShader(fragmentShaderSource);
 
         //Load Textures
@@ -242,7 +240,7 @@ public class Window {
             playerInc = new Vector3f(0f, 0f, 0f);
 
             //Update player camera rotation
-            Vector2f rotVec = mouseInput.getDisplVec();
+            Vector2f rotVec = MouseInput.getDisplVec();
             getPlayer().moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
 
 
@@ -283,13 +281,11 @@ public class Window {
             if (loadedWorld == null) {
                 angle += 0.007f;
                 isMenuRendered = true;
-                isWorldRendered = false;
                 renderMenu();
             }
             else {
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 isMenuRendered = false;
-                isWorldRendered = true;
                 renderWorld();
             }
 
@@ -317,8 +313,6 @@ public class Window {
         glDeleteBuffers(vboID);
         glDeleteBuffers(eboID);
     }
-
-
 
     private void renderMenu() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -480,9 +474,10 @@ public class Window {
     }
 
     private void renderWorld() {
-        //TODO: Regions either not displaying chunk number correctly or adding unnecessary chunks to them
-        //TODO: A lot of chunks are generating for some reason and its eating up all the memory
 
+        /*====================================
+         Chunk and Region check
+        =====================================*/
         //playerChunk will be null when world first loads
         if (globalPlayerChunk == null)
             globalPlayerChunk = Player.getChunkWithPlayer();
@@ -492,8 +487,6 @@ public class Window {
             globalPlayerRegion = Player.getRegionWithPlayer();
             RegionManager.enterRegion(globalPlayerRegion);
         }
-
-
 
         //Updates the chunks to render only when the player has moved into a new chunk
         GlueList<Chunk> chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
@@ -508,9 +501,10 @@ public class Window {
                 RegionManager.updateVisibleRegions();
             }
         }
-      //  System.out.println(Player.getRegionWithPlayer());
 
-
+        /*=====================================
+         Vertex attribute setup for the shaders
+        ======================================*/
         int posSize = 3;
         int colorSize = 4;
         int uvSize = 2;
@@ -529,6 +523,9 @@ public class Window {
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
         glEnableVertexAttribArray(2);
 
+        /*=====================================
+         View Matrix setup
+        ======================================*/
         // Set up the model-view-projection matrix
         Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(player.getModelViewMatrix());
 
@@ -537,13 +534,16 @@ public class Window {
         glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
 
+        /*======================================================
+         Getting vertex and element information for rendering
+        ========================================================*/
         float[] vertices = new float[0];
         int[] elements = new int[0];
 
         //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
         for (Chunk c : chunksToRender) {
             Future<Map.Entry<float[], int[]>> temp;
-            temp = Main.executor.submit(() -> getChunkData(c).entrySet().stream().findFirst().orElse(null));
+            temp = Main.executor.submit(() -> c.getChunkData().entrySet().stream().findFirst().orElse(null));
             try {
                 vertices = ArrayUtils.addAll(vertices, temp.get().getKey());
                 elements = ArrayUtils.addAll(elements, temp.get().getValue());
@@ -551,7 +551,6 @@ public class Window {
                 logger.warning(e.getMessage());
             }
         }
-
 
         /*==================================
         Buffer binding and loading
@@ -603,64 +602,7 @@ public class Window {
     }
 
 
-    /**
-     * For each cube in a chunk, checks the 6 adjacent cubes o calculate which
-     * block faces to render
-     */
-    public Map<float[], int[]> getChunkData(Chunk c) {
 
-        //TODO: Fix massive performance issues caused by this
-        float[] vertices = new float[0];
-        int[] elements = new int[0];
-        int elementCounter = 0;
-
-
-        //Calculate faces to render given cube origin
-        for (int i = 0; i < c.getHeightMap().size(); i++) {
-            Cube cube = c.getHeightMap().get(i);
-            Cube c1 = null, c2 = null, c3 = null, c4 = null, c5 = null, c6 = null;
-
-            for (Cube otherCube : c.getHeightMap()) {
-                if (otherCube.getX() == cube.getX() + 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
-                    c1 = otherCube;
-                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() + 1 && otherCube.getZ() == cube.getZ()) {
-                    c2 = otherCube;
-                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() + 1) {
-                    c3 = otherCube;
-                } else if (otherCube.getX() == cube.getX() - 1 && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ()) {
-                    c4 = otherCube;
-                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() - 1 && otherCube.getZ() == cube.getZ()) {
-                    c5 = otherCube;
-                } else if (otherCube.getX() == cube.getX() && otherCube.getY() == cube.getY() && otherCube.getZ() == cube.getZ() - 1) {
-                    c6 = otherCube;
-                }
-            }
-
-            //If c1 is null, positive X face should be rendered
-            if (c1 == null) {
-                float[] origin = {cube.getX() + 1, cube.getY(), cube.getZ()};
-                TextureCoordinateStore right = cube.getBlockType().getRightCoords();
-                float[] posXFace = {
-                        //Position                                  Color               Texture
-                        origin[0], origin[1] - 1, origin[2] - 1,    0f, 0f, 0f, 0f,     right.getBottomRight()[0], right.getBottomRight()[1],
-                        origin[0], origin[1], origin[2] - 1,        0f, 0f, 0f, 0f,     right.getTopRight()[0], right.getTopRight()[1],
-                        origin[0], origin[1] - 1, origin[2],        0f, 0f, 0f, 0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
-                        origin[0], origin[1], origin[2],            0f, 0f, 0f, 0f,     right.getTopLeft()[0], right.getTopLeft()[1],
-                };
-                int[] posXElements = {
-                        elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
-                };
-                elementCounter += 4;
-
-                vertices = ArrayUtils.addAll(vertices, posXFace);
-                elements = ArrayUtils.addAll(elements, posXElements);
-            }
-
-        }
-        Map<float[], int[]> out = new HashMap<>();
-        out.put(vertices, elements);
-        return out;
-    }
     public static Player getPlayer() {
         return Window.player;
     }
