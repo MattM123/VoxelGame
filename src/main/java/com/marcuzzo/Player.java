@@ -7,7 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
 public class Player implements Serializable {
-    private final Matrix4f modelViewMatrix;
+    private static Matrix4f modelViewMatrix;
     private static Vector3f position = null;
     private static Vector3f rotation = null;
   //  private final Vector3f cameraUp = new Vector3f(0, 1, 0);
@@ -18,7 +18,7 @@ public class Player implements Serializable {
      *
      */
     public Player() {
-        this.modelViewMatrix = new Matrix4f();
+        modelViewMatrix = new Matrix4f();
         position = new Vector3f(0f, 0f, 0f);
         modelViewMatrix.setTranslation(position);
 
@@ -172,7 +172,7 @@ public class Player implements Serializable {
         return c;
     }
 
-    public Matrix4f getModelViewMatrix() {
+    public static Matrix4f getModelViewMatrix() {
         return modelViewMatrix;
     }
 

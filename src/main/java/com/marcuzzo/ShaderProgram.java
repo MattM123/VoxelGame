@@ -1,14 +1,19 @@
 package com.marcuzzo;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
     private int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
+    private final Map<String, Integer> uniforms;
 
     public ShaderProgram() {
+        uniforms = new HashMap<>();
     }
 
     public void generateProgramID() {
@@ -38,6 +43,15 @@ public class ShaderProgram {
     }
 
 
+    public void createUniform(String uniformName) throws Exception {
+        int uniformLocation = glGetUniformLocation(programId,
+                uniformName);
+        if (uniformLocation < 0) {
+            throw new Exception("Could not find uniform:" +
+                    uniformName);
+        }
+        uniforms.put(uniformName, uniformLocation);
+    }
     private int createShader(String shaderCode, int shaderType) {
         int shaderId = glCreateShader(shaderType);
         glShaderSource(shaderId, shaderCode);

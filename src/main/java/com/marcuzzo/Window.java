@@ -141,19 +141,23 @@ public class Window {
         GL.createCapabilities();
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        modelViewMatrix = Window.getPlayer().getModelViewMatrix();
+        modelViewMatrix = Player.getModelViewMatrix();
         modelViewMatrix.translate(new Vector3f(0.0f, 0.0f, -2.0f));
         glfwSetKeyCallback(windowPtr, (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_W) {
+            if (key == GLFW_KEY_W)
                 playerInc.z = 1.0f;
-            } else if (key == GLFW_KEY_S) {
+            else if (key == GLFW_KEY_S)
                 playerInc.z = -1.0f;
-            }
-            if (key == GLFW_KEY_A) {
+
+            if (key == GLFW_KEY_A)
                 playerInc.x = 1.0f;
-            } else if (key == GLFW_KEY_D) {
+            else if (key == GLFW_KEY_D)
                 playerInc.x = -1.0f;
-            }
+
+            if (key == GLFW_KEY_SPACE)
+                playerInc.y = 1.0f;
+            else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT)
+                playerInc.y = -1.0f;
         });
 
         // Get the thread stack and push a new frame
@@ -218,6 +222,7 @@ public class Window {
         glEnable(GL_DEPTH_TEST);
 
         // Set the clear color (background)
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         //Enable primitive restart
@@ -270,7 +275,7 @@ public class Window {
             // Set up the projection matrix
             try (MemoryStack stack = stackPush()) {
                 FloatBuffer pMatrix = stack.mallocFloat(16);
-                float FAR = 100.0f;
+                float FAR = 1000.0f;
                 float NEAR = 0.1f;
 
                 projectionMatrix = new Matrix4f().perspective(FOV, (float) this.getCurrentWindowWidth() / this.getCurrentWindowHeight(), NEAR, FAR);
@@ -365,8 +370,6 @@ public class Window {
                     0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
             };
 
-
-
             // Declares the Elements Array, where the indices to be drawn are stored
             int[] elementArray = {
                     //Front face
@@ -381,7 +384,6 @@ public class Window {
                     16, 17, 18, 19, 80000,
                     //Bottom face
                     20, 21, 22, 23, 80000
-
             };
 
 
@@ -412,7 +414,7 @@ public class Window {
 
 
             /*=====================================
-            Vertex attribute definitions for shader
+            Vertex attribute definitions for shaders
             ======================================*/
             int posSize = 3;
             int colorSize = 4;
@@ -445,14 +447,10 @@ public class Window {
             // Set up the model-view-projection matrix
             Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(modelViewMatrix);
 
+
             // Pass the model-view-projection matrix to the shader as a uniform
             int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
             glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
-
-            // Enable the vertex attribute pointers
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
 
             /*==================================
             Drawing
@@ -502,39 +500,7 @@ public class Window {
             }
         }
 
-        /*=====================================
-         Vertex attribute setup for the shaders
-        ======================================*/
-        int posSize = 3;
-        int colorSize = 4;
-        int uvSize = 2;
-        int floatSizeBytes = 4;
-        int vertexSizeBytes = (posSize + colorSize) * floatSizeBytes;
-
-        //Position
-        glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
-        glEnableVertexAttribArray(0);
-
-        //Color
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
-        glEnableVertexAttribArray(1);
-
-        //Texture
-        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
-        glEnableVertexAttribArray(2);
-
-        /*=====================================
-         View Matrix setup
-        ======================================*/
-        // Set up the model-view-projection matrix
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(player.getModelViewMatrix());
-
-        // Pass the model-view-projection matrix to the shader as a uniform
-        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
-        glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
-
-
-        /*======================================================
+         /*======================================================
          Getting vertex and element information for rendering
         ========================================================*/
         float[] vertices = new float[0];
@@ -577,17 +543,42 @@ public class Window {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
-        // Enable the vertex attribute pointers
+        /*=====================================
+         Vertex attribute setup for shaders
+        ======================================*/
+        int posSize = 3;
+        int colorSize = 4;
+        int uvSize = 2;
+        int floatSizeBytes = 4;
+        int vertexSizeBytes = (posSize + colorSize + uvSize) * floatSizeBytes;
+
+        //Position
+        glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
         glEnableVertexAttribArray(0);
+
+        //Color
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
         glEnableVertexAttribArray(1);
+
+        //Texture
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
         glEnableVertexAttribArray(2);
+
+        /*=====================================
+         View Matrix setup
+        ======================================*/
+        // Set up the model-view-projection matrix
+        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(Player.getModelViewMatrix());
+
+        // Pass the model-view-projection matrix to the shader as a uniform
+        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
+        glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
         /*==================================
         Drawing
         ====================================*/
         TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
         glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
-
 
         //Unbind and cleanup everything
         chunksToRender.clear();

@@ -17,7 +17,6 @@ public class TextureLoader {
     public TextureLoader() {
     }
 
-
     public static void loadTexture(String path) {
         //Loading texture atlas as bytebuffer
 
@@ -32,7 +31,8 @@ public class TextureLoader {
             glBindTexture(GL_TEXTURE_2D, texId);
 
             //Setting texture parameters
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

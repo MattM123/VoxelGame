@@ -313,10 +313,10 @@ public class Chunk extends PolygonMeshView implements Serializable {
                     TextureCoordinateStore right = cube.getBlockType().getRightCoords();
                     float[] posXFace = {
                             //Position                                  Color                       Texture
-                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
-                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 0.0f,     right.getTopRight()[0], right.getTopRight()[1],
-                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
-                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 0.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 1.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 1.0f,     right.getTopRight()[0], right.getTopRight()[1],
+                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 1.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 1.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
                     };
                     int[] posXElements = {
                             elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
