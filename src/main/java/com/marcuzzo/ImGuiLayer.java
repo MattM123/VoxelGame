@@ -2,8 +2,10 @@ package com.marcuzzo;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
+import imgui.type.ImString;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -14,6 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.logging.Logger;
+
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 
 public class ImGuiLayer {
@@ -22,22 +27,21 @@ public class ImGuiLayer {
     private int parentWidth = 0;
     private int parentHeight = 0;
     public static String worlds = System.getenv("APPDATA") + "/.voxelGame/worlds/";
+    private static final Logger logger = Logger.getLogger("Logger");
 
     public void imgui() {
-
-
         if (Window.isMenuRendered()) {
             ImGui.begin("World List", new ImBoolean(true));
 
             ImGui.text("Choose a World");
-            ImGui.sameLine(ImGui.getWindowSizeX() - 85, -1);
+            ImGui.sameLine(ImGui.getWindowSizeX() - 100, -1);
 
             if (ImGui.button("Reposition")) {
                 ImGui.setWindowPos(parentX, parentY);
                 ImGui.setWindowSize(parentWidth / 4.0f, parentHeight / 2.0f);
             }
 
-            ImGui.beginChild("World List Pane", 0, 0, true, ImGuiWindowFlags.AlwaysVerticalScrollbar);
+            ImGui.beginChild("World List Pane", 0, -30, true, ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
             //Create UI entries for each world within world list
             try {
@@ -75,6 +79,23 @@ public class ImGuiLayer {
             }
 
             ImGui.endChild();
+
+            ImGui.pushItemWidth(ImGui.getWindowSizeY() / 3);
+            glfwPollEvents();
+            ImString txt = new ImString("");
+            ImGui.inputText(" ", txt, ImGuiInputTextFlags.CallbackEdit | ImGuiInputTextFlags.CallbackResize);
+            ImGui.popItemWidth();
+
+            ImGui.sameLine();
+
+            if (ImGui.button("Create New World")) {
+                try {
+                    Files.createDirectory(Path.of(worlds + txt));
+                } catch (Exception e) {
+                    logger.warning(e.getMessage());
+                }
+            }
+
             ImGui.end();
         } else {
             /*=====================================
@@ -86,11 +107,11 @@ public class ImGuiLayer {
             ImGui.setWindowSize(parentWidth / 4.0f, parentHeight / 2.0f);
             ImGui.pushStyleColor(ImGuiCol.WindowBg,1.0f, 1.0f, 0.0f, 1.0f);
             ImGui.text("Player Position: X:" + Player.getPosition().x() + " Y:" + Player.getPosition().y() + " Z:" + Player.getPosition().z());
-            ImGui.text("Player Rotation: X:" + Player.getRotation().x() + ", Y:" + Player.getRotation().y() + ", Z:" + Player.getRotation().z());
+            ImGui.text("Player Rotation: X:" + Player.getRotation().x() + ", Y:" + Player.getRotation().y());
             ImGui.text("");
             ImGui.text("Region: " + Player.getRegionWithPlayer());
             ImGui.text(Player.getChunkWithPlayer().toString());
-            ImGui.text("RenderedChunks Size: " + ChunkRenderer.getChunksToRender().size);
+            ImGui.text("RenderedChunks Size: " + ChunkCache.getChunksToRender().size);
             ImGui.text("");
             ImGui.text("Cursor Position: " + MouseInput.getCursorPos().x + ", " + MouseInput.getCursorPos().y);
             ImGui.popStyleColor();

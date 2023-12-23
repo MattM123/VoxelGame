@@ -1,16 +1,17 @@
 package com.marcuzzo;
 
+import org.joml.Math;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
 public class Player implements Serializable {
-    private static Matrix4f modelViewMatrix;
-    private static Vector3f position = null;
-    private static Vector3f rotation = null;
-  //  private final Vector3f cameraUp = new Vector3f(0, 1, 0);
+    private static Vector3f position;
+    private static float yaw = 0f;
+    private static float pitch = 0f;
 
     /**
      * Default player object is initialized at a position of 0,0,0 within
@@ -18,14 +19,9 @@ public class Player implements Serializable {
      *
      */
     public Player() {
-        modelViewMatrix = new Matrix4f();
-        position = new Vector3f(0f, 0f, 0f);
-        modelViewMatrix.setTranslation(position);
+        position = new Vector3f(0, 0, 0);
 
-        rotation = new Vector3f(0f, 0f, 0f);
-        modelViewMatrix.setRotationXYZ(rotation.x, rotation.y, rotation.z);
-
-        ChunkRenderer.setPlayerChunk(getChunkWithPlayer());
+        ChunkCache.setPlayerChunk(getChunkWithPlayer());
         RegionManager.enterRegion(getRegionWithPlayer());
     }
 
@@ -33,58 +29,33 @@ public class Player implements Serializable {
         return position;
     }
 
-    /*
-    public void setPosition(float x, float y, float z) {
-        this.position.x = x;
-        this.position.y = y;
-        this.position.z = z;
-        this.modelViewMatrix.setTranslation(position);
+    public static Vector2f getRotation() {
+        return new Vector2f(yaw, pitch);
     }
 
-     */
-
-    public void movePosition(float offsetX, float offsetY, float offsetZ) {
-        if ( offsetZ != 0 ) {
-            position.x += (float)Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
-            position.z += (float)Math.cos(Math.toRadians(rotation.y)) * offsetZ;
-        }
-        if ( offsetX != 0) {
-            position.x += (float)Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
-            position.z += (float)Math.cos(Math.toRadians(rotation.y - 90)) * offsetX;
-        }
-        position.y += offsetY;
-        modelViewMatrix.setTranslation(position);
+    public void moveBackwards(float inc) {
+        position.z += inc;
     }
 
-    /*
-    public Vector3f getRotation() {
-        return rotation;
+    public void moveDown(float inc) {
+        position.y -= inc;
     }
 
-    public void setRotation(float x, float y, float z) {
-        this.rotation.x = x;
-        this.rotation.y = y;
-        this.rotation.z = z;
-        modelViewMatrix.setRotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
+    public void moveForward(float inc) {
+        position.z -= inc;
     }
 
-     */
-
-    public void moveRotation(float offsetX, float offsetY, float offsetZ) {
-        rotation.x += offsetX;
-        rotation.y += offsetY;
-        rotation.z += offsetZ;
-
-        float rotationAngle = 5f;
-        modelViewMatrix.rotate(rotationAngle, rotation.x, rotation.y, rotation.z);
-        //modelViewMatrix.setRotationXYZ(rotation.x, rotation.y, rotation.z);
-        //System.out.println(modelViewMatrix.rotation);
+    public void moveLeft(float inc) {
+        position.x -= inc;
     }
 
-    public static Vector3f getRotation() {
-        return rotation;
+    public void moveRight(float inc) {
+        position.x += inc;
     }
 
+    public void moveUp(float inc) {
+        position.y += inc;
+    }
 
     /**
      * Gets the region that the player currently inhabits.
@@ -172,8 +143,20 @@ public class Player implements Serializable {
         return c;
     }
 
-    public static Matrix4f getModelViewMatrix() {
-        return modelViewMatrix;
+    public void setLookDir(float x, float y) {
+        yaw = x;
+        pitch = y;
+    }
+    public Matrix4f getViewMatrix() {
+        Vector3f lookPoint = new Vector3f(0f, 0f, -1f);
+        lookPoint.rotateX(Math.toRadians(pitch), lookPoint);
+        lookPoint.rotateY(Math.toRadians(yaw), lookPoint);
+        lookPoint.add(position);
+
+        Matrix4f matrix = new Matrix4f();
+        matrix.lookAt(position, lookPoint, new Vector3f(0, 1, 0), matrix);
+
+        return matrix;
     }
 
 

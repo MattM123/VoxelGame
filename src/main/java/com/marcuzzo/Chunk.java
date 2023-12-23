@@ -3,7 +3,6 @@ package com.marcuzzo;
 import com.marcuzzo.Texturing.BlockType;
 import com.marcuzzo.Texturing.TextureCoordinateStore;
 import org.apache.commons.lang3.ArrayUtils;
-import org.fxyz3d.shapes.polygon.PolygonMeshView;
 import org.joml.Vector3f;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
@@ -19,7 +18,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
-public class Chunk extends PolygonMeshView implements Serializable {
+//public class Chunk extends PolygonMeshView implements Serializable {
+public class Chunk implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private Vector3f location;
@@ -33,12 +33,15 @@ public class Chunk extends PolygonMeshView implements Serializable {
     private static final Logger logger = Logger.getLogger("Logger");
     private float[] vertexCache = new float[0];
     private int[] elementCache = new int[0];
+    private int vbo = 0;
+    private int ebo = 0;
 
     public Chunk() {
-        setOnMouseClicked(mouseEvent -> {
-            didChange = true;
-            Main.executor.execute(this::updateMesh);
-        });
+
+      //  setOnMouseClicked(mouseEvent -> {
+     //       didChange = true;
+     //       Main.executor.execute(this::updateMesh);
+    //    });
     }
 
     /**
@@ -134,7 +137,7 @@ public class Chunk extends PolygonMeshView implements Serializable {
 
             //Updates data caches when the chunk mesh has changed
             Future<Map.Entry<float[], int[]>> temp;
-            temp = Main.executor.submit(() -> getChunkData().entrySet().stream().findFirst().orElse(null));
+            temp = Main.executor.submit(() -> getRenderTask().getChunkData());
             try {
                 vertexCache = temp.get().getKey();
                 elementCache = temp.get().getValue();
@@ -279,11 +282,14 @@ public class Chunk extends PolygonMeshView implements Serializable {
      * @return A map object consisting of the vertex and element information
      * required to graphically render each block face
      */
-    public Map<float[], int[]> getChunkData() {
+    //TODO: Multithread this
+    public RenderTask getRenderTask() {
+
         float[] vertices = new float[0];
         int[] elements = new int[0];
         int elementCounter = 0;
 
+        //Refresh data caches if needed. Don't re-calculate block faces if not necessary
         if (didChange || elementCache.length == 0 || vertexCache.length == 0) {
 
             //Calculate faces to render given cube origin
@@ -309,14 +315,14 @@ public class Chunk extends PolygonMeshView implements Serializable {
 
                 //If c1 is null, positive X face should be rendered
                 if (c1 == null) {
-                    float[] origin = {cube.getX() + 1, cube.getY(), cube.getZ()};
+                    float[] origin = {cube.getX() - 1, cube.getY(), cube.getZ()};
                     TextureCoordinateStore right = cube.getBlockType().getRightCoords();
                     float[] posXFace = {
                             //Position                                  Color                       Texture
-                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 1.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
-                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 1.0f,     right.getTopRight()[0], right.getTopRight()[1],
-                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 1.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
-                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 1.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 0.0f,     right.getTopRight()[0], right.getTopRight()[1],
+                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 0.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
                     };
                     int[] posXElements = {
                             elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
@@ -326,6 +332,68 @@ public class Chunk extends PolygonMeshView implements Serializable {
                     vertices = ArrayUtils.addAll(vertices, posXFace);
                     elements = ArrayUtils.addAll(elements, posXElements);
                 }
+
+                /*
+                //If c3 is null, positive Z face should be rendered
+                if (c3 == null) {
+                    float[] origin = {cube.getX(), cube.getY(), cube.getZ() + 1};
+                    TextureCoordinateStore front = cube.getBlockType().getFrontCoords();
+                    float[] posZFace = {
+                            //Position                                  Color                       Texture
+                            origin[0] - 1, origin[1] - 1, origin[2],    1.0f, 0.0f, 0.0f, 0.0f,     front.getBottomLeft()[0], front.getBottomLeft()[1],
+                            origin[0], origin[1] - 1, origin[2],        1.0f, 0.0f, 0.0f, 0.0f,     front.getBottomRight()[0], front.getBottomRight()[1],
+                            origin[0] - 1, origin[1], origin[2],        1.0f, 0.0f, 0.0f, 0.0f,     front.getTopLeft()[0], front.getTopLeft()[1],
+                            origin[0], origin[1], origin[2],            1.0f, 0.0f, 0.0f, 0.0f,     front.getTopRight()[0], front.getTopRight()[1],
+                    };
+                    int[] posZElements = {
+                            elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
+                    };
+                    elementCounter += 4;
+
+                    vertices = ArrayUtils.addAll(vertices, posZFace);
+                    elements = ArrayUtils.addAll(elements, posZElements);
+                }
+
+                //If c4 is null, negative X face should be rendered
+                if (c4 == null) {
+                    float[] origin = {cube.getX() - 1, cube.getY(), cube.getZ()};
+                    TextureCoordinateStore right = cube.getBlockType().getRightCoords();
+                    float[] negXFace = {
+                            //Position                                      Color                       Texture
+                            origin[0] - 1, origin[1] - 1, origin[2] - 1,    1.0f, 0.0f, 0.0f, 0.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                            origin[0] - 1, origin[1], origin[2] - 1,        1.0f, 0.0f, 0.0f, 0.0f,     right.getTopRight()[0], right.getTopRight()[1],
+                            origin[0] - 1, origin[1] - 1, origin[2],        1.0f, 0.0f, 0.0f, 0.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                            origin[0] - 1, origin[1], origin[2],            1.0f, 0.0f, 0.0f, 0.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                    };
+                    int[] negXElements = {
+                            elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
+                    };
+                    elementCounter += 4;
+
+                    vertices = ArrayUtils.addAll(vertices, negXFace);
+                    elements = ArrayUtils.addAll(elements, negXElements);
+                }
+
+                //If c6 is null, negative Z face should be rendered
+                if (c6 == null) {
+                    float[] origin = {cube.getX(), cube.getY(), cube.getZ() - 1};
+                    TextureCoordinateStore back = cube.getBlockType().getBackCoords();
+                    float[] negZFace = {
+                            //Position                                      Color                       Texture
+                            origin[0] - 1, origin[1] - 1, origin[2] - 1,    1.0f, 0.0f, 0.0f, 0.0f,     back.getBottomLeft()[0], back.getBottomLeft()[1],
+                            origin[0], origin[1] - 1, origin[2] - 1,        1.0f, 0.0f, 0.0f, 0.0f,     back.getBottomRight()[0], back.getBottomRight()[1],
+                            origin[0] - 1, origin[1], origin[2] - 1,        1.0f, 0.0f, 0.0f, 0.0f,     back.getTopLeft()[0], back.getTopLeft()[1],
+                            origin[0], origin[1], origin[2] - 1,            1.0f, 0.0f, 0.0f, 0.0f,     back.getTopRight()[0], back.getTopRight()[1],
+                    };
+                    int[] negZElements = {
+                            elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
+                    };
+                    elementCounter += 4;
+
+                    vertices = ArrayUtils.addAll(vertices, negZFace);
+                    elements = ArrayUtils.addAll(elements, negZElements);
+                }
+                 */
             }
             elementCache = elements;
             vertexCache = vertices;
@@ -333,7 +401,7 @@ public class Chunk extends PolygonMeshView implements Serializable {
 
         Map<float[], int[]> out = new HashMap<>();
         out.put(vertexCache, elementCache);
-        return out;
+        return new RenderTask(out, vbo, ebo, this);
     }
 
     @Serial
@@ -363,9 +431,6 @@ public class Chunk extends PolygonMeshView implements Serializable {
         });
     }
 
-    public boolean didChange() {
-        return didChange;
-    }
     private Chunk readChunk(InputStream stream) {
 
         AtomicReference<Chunk> c = new AtomicReference<>();
@@ -381,6 +446,15 @@ public class Chunk extends PolygonMeshView implements Serializable {
             } catch (Exception e) { e.printStackTrace(); }
         });
         return c.get();
+    }
+    public boolean didChange() {
+        return didChange;
+    }
+    public void setEbo(int i) {
+        ebo = i;
+    }
+    public void setVbo(int i) {
+        vbo = i;
     }
 
     @Override

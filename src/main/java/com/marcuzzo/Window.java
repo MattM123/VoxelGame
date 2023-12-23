@@ -27,7 +27,9 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
@@ -59,25 +61,26 @@ public class Window {
     private static Matrix4f projectionMatrix;
     private static Matrix4f modelViewMatrix;
     //X pos of window
+    private static Player player;
     private int windowWidth = 0;
     //Y pos of window
     private int windowHeight = 0;
-    private static Player player;
     public static Chunk globalPlayerChunk;
     public static Region globalPlayerRegion;
     private static RegionManager loadedWorld;
     public final float PLAYER_STEP_SPEED = 1.0f;
     public final float MOUSE_SENSITIVITY = 0.04f;
     private final MouseInput mouseInput = new MouseInput();
-    private Vector3f playerInc = new Vector3f(0f, 0f, 0f);
     private int vaoID;
     private int vboID;
     private int eboID;
     private static boolean isMenuRendered = false;
+    private static boolean isWorldRendered = false;
 
     public Window(ImGuiLayer layer) {
         if (player == null)
             player = new Player();
+
         this.layer = layer;
     }
     public void init() {
@@ -141,23 +144,23 @@ public class Window {
         GL.createCapabilities();
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        modelViewMatrix = Player.getModelViewMatrix();
+        modelViewMatrix = player.getViewMatrix();
         modelViewMatrix.translate(new Vector3f(0.0f, 0.0f, -2.0f));
         glfwSetKeyCallback(windowPtr, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_W)
-                playerInc.z = 1.0f;
+                player.moveForward(1);
             else if (key == GLFW_KEY_S)
-                playerInc.z = -1.0f;
+                player.moveBackwards(1);
 
             if (key == GLFW_KEY_A)
-                playerInc.x = 1.0f;
+                player.moveLeft(1);
             else if (key == GLFW_KEY_D)
-                playerInc.x = -1.0f;
+                player.moveRight(1);
 
             if (key == GLFW_KEY_SPACE)
-                playerInc.y = 1.0f;
+                player.moveUp(1);
             else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT)
-                playerInc.y = -1.0f;
+                player.moveDown(1);
         });
 
         // Get the thread stack and push a new frame
@@ -204,7 +207,7 @@ public class Window {
         shaderProgram.createFragmentShader(fragmentShaderSource);
 
         //Load Textures
-        shaderProgram.uploadTexture("texture_Sampler", 0);
+        shaderProgram.uploadTexture("texture_sampler", 0);
 
         // Link the shader program
         shaderProgram.link();
@@ -222,7 +225,6 @@ public class Window {
         glEnable(GL_DEPTH_TEST);
 
         // Set the clear color (background)
-
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         //Enable primitive restart
@@ -239,14 +241,10 @@ public class Window {
 
             // Update player position
             mouseInput.input();
-            player.movePosition(playerInc.x * PLAYER_STEP_SPEED,
-                    playerInc.y * PLAYER_STEP_SPEED,
-                    playerInc.z * PLAYER_STEP_SPEED);
-            playerInc = new Vector3f(0f, 0f, 0f);
 
-            //Update player camera rotation
             Vector2f rotVec = MouseInput.getDisplVec();
-            getPlayer().moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
+            player.setLookDir((float) Math.toRadians(-rotVec.x * MOUSE_SENSITIVITY),
+                    (float) Math.toRadians(-rotVec.y * MOUSE_SENSITIVITY));
 
 
             //Resets viewport on window resize. Prevents graphics getting cut off by
@@ -275,10 +273,10 @@ public class Window {
             // Set up the projection matrix
             try (MemoryStack stack = stackPush()) {
                 FloatBuffer pMatrix = stack.mallocFloat(16);
-                float FAR = 1000.0f;
+                float FAR = 100.0f;
                 float NEAR = 0.1f;
 
-                projectionMatrix = new Matrix4f().perspective(FOV, (float) this.getCurrentWindowWidth() / this.getCurrentWindowHeight(), NEAR, FAR);
+                projectionMatrix = new Matrix4f().setPerspective(FOV, (float) this.getCurrentWindowWidth() / this.getCurrentWindowHeight(), NEAR, FAR);
                 projectionMatrix.get(pMatrix);
             }
 
@@ -286,11 +284,13 @@ public class Window {
             if (loadedWorld == null) {
                 angle += 0.007f;
                 isMenuRendered = true;
+                isWorldRendered = false;
                 renderMenu();
             }
             else {
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 isMenuRendered = false;
+                isWorldRendered = true;
                 renderWorld();
             }
 
@@ -345,13 +345,13 @@ public class Window {
                     -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
                     0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
 
-                    // Left face. Rendering sideways for some reason
+                    // Left face
                     -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
                     -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
                     -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
                     -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
 
-                    // Right face. Rendering sideways for some reason
+                    // Right face
                     0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
                     0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
                     0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
@@ -449,7 +449,7 @@ public class Window {
 
 
             // Pass the model-view-projection matrix to the shader as a uniform
-            int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
+            int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "viewProjectionMatrix");
             glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
             /*==================================
@@ -471,7 +471,24 @@ public class Window {
         cleanupBuffers();
     }
 
+
+    //Potential iomprovents:
+    // Bind buffers outside of loop
+
     private void renderWorld() {
+        /*=====================================
+         View Matrix setup
+        ======================================*/
+        // Set up the model-view-projection matrix
+        // Set up the model-view matrix for rotation
+
+        Matrix4f viewProjectionMatrix = new Matrix4f(projectionMatrix).mul(player.getViewMatrix());
+        // System.out.println(Arrays.toString(viewProjectionMatrix.get(new float[16])));
+
+        // Pass the model-view-projection matrix to the shader as a uniform
+        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "viewProjectionMatrix");
+        glUniformMatrix4fv(mvpMatrixLocation, false, viewProjectionMatrix.get(new float[16]));
+
 
         /*====================================
          Chunk and Region check
@@ -487,11 +504,11 @@ public class Window {
         }
 
         //Updates the chunks to render only when the player has moved into a new chunk
-        GlueList<Chunk> chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
+        GlueList<Chunk> chunksToRender = new GlueList<>(ChunkCache.getChunksToRender());
         if (!Player.getChunkWithPlayer().getLocation().equals(globalPlayerChunk.getLocation())) {
             globalPlayerChunk = Player.getChunkWithPlayer();
-            ChunkRenderer.setPlayerChunk(globalPlayerChunk);
-            chunksToRender = new GlueList<>(ChunkRenderer.getChunksToRender());
+            ChunkCache.setPlayerChunk(globalPlayerChunk);
+            chunksToRender = new GlueList<>(ChunkCache.getChunksToRender());
 
             //Updates the regions when player moves into different region
             if (!Player.getRegionWithPlayer().equals(globalPlayerRegion)) {
@@ -500,52 +517,9 @@ public class Window {
             }
         }
 
-         /*======================================================
-         Getting vertex and element information for rendering
-        ========================================================*/
-        float[] vertices = new float[0];
-        int[] elements = new int[0];
-
-        //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
-        for (Chunk c : chunksToRender) {
-            Future<Map.Entry<float[], int[]>> temp;
-            temp = Main.executor.submit(() -> c.getChunkData().entrySet().stream().findFirst().orElse(null));
-            try {
-                vertices = ArrayUtils.addAll(vertices, temp.get().getKey());
-                elements = ArrayUtils.addAll(elements, temp.get().getValue());
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
-            }
-        }
-
-        /*==================================
-        Buffer binding and loading
-        ====================================*/
-        vboID = glGenBuffers();
-        eboID = glGenBuffers();
-        vaoID = glGenVertexArrays();
-
-        glBindVertexArray(vaoID);
-
-        //Vertices
-        FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(vertices.length);
-        vertexBuffer.put(vertices).flip();
-
-        // Create VBO upload the vertex buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-        //Elements
-        IntBuffer elementBuffer = MemoryUtil.memAllocInt(elements.length);
-        elementBuffer.put(elements).flip();
-
-        // Create EBO upload the element buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
         /*=====================================
-         Vertex attribute setup for shaders
-        ======================================*/
+         Vertex attribute definitions for shaders
+         ======================================*/
         int posSize = 3;
         int colorSize = 4;
         int uvSize = 2;
@@ -554,52 +528,110 @@ public class Window {
 
         //Position
         glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
-        glEnableVertexAttribArray(0);
-
         //Color
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
-        glEnableVertexAttribArray(1);
-
         //Texture
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
-        glEnableVertexAttribArray(2);
 
-        /*=====================================
-         View Matrix setup
-        ======================================*/
-        // Set up the model-view-projection matrix
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(Player.getModelViewMatrix());
 
-        // Pass the model-view-projection matrix to the shader as a uniform
-        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "modelViewProjectionMatrix");
-        glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
 
-        /*==================================
-        Drawing
-        ====================================*/
-        TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
-        glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
+        //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
+        ArrayList<Future<RenderTask>> renderTasks = new ArrayList<>();
+        vaoID = glGenVertexArrays();
+
+        //Gets ChunkCache mesh data in a non-blocking manner
+        for (Chunk c : chunksToRender) {
+            /*======================================================
+             Getting vertex and element information for rendering
+            ========================================================*/
+
+            //getChunkData always returns a map with a single entry
+            //If chunk is already rendered in the same state that it's requested to render in, the
+            //data caches will be used rather than recalculating chunk data
+          //  Map.Entry<float[], int[]> chunkData = c.getChunkData().entrySet().stream().findFirst().orElse(null);
+        //    assert chunkData != null;
+           // float[] vertices = chunkData.getKey();
+          //  int[] elements = chunkData.getValue();
+           // if (c.getEbo() == 0)
+            c.setEbo(glGenBuffers());
+            c.setVbo(glGenBuffers());
+            renderTasks.add(Main.executor.submit(c::getRenderTask));
+        }
+
+        glBindVertexArray(vaoID);
+        for (Future<RenderTask> chunkRenderTask : renderTasks) {
+            float[] vertices = new float[0];
+            int[] elements = new int[0];
+            Map.Entry<float[], int[]> chunkData;
+            RenderTask task = null;
+            //Gets chunk data from previously submitted Future
+            try {
+                task = chunkRenderTask.get();
+                chunkData = chunkRenderTask.get().getChunkData();
+                vertices = ArrayUtils.addAll(vertices, chunkData.getKey());
+                elements = ArrayUtils.addAll(elements, chunkData.getValue());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warning(e.getMessage());
+            }
+
+            //Sends chunk data to GPU for drawing
+            if (vertices.length > 0 && elements.length > 0) {
+                /*==================================
+                Buffer binding and loading
+                ====================================*/
+
+                //Vertices
+                FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(vertices.length);
+                vertexBuffer.put(vertices).flip();
+
+                // Create VBO upload the vertex buffer
+                glBindBuffer(GL_ARRAY_BUFFER, task.getVbo());
+                glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+
+                //float[] test = new float[vertices.length];
+                //glGetBufferSubData(GL_ARRAY_BUFFER, 0, test);
+                //System.out.println("VBO: " + Arrays.toString(test));
+                //System.out.println("Vertices: " + Arrays.toString(vertices));
+
+                //Elements
+                IntBuffer elementBuffer = MemoryUtil.memAllocInt(elements.length);
+                elementBuffer.put(elements).flip();
+
+                // Create EBO upload the element buffer
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, task.getEbo());
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
+
+                glEnableVertexAttribArray(0);
+                glEnableVertexAttribArray(1);
+                glEnableVertexAttribArray(2);
+
+                //int[] test1 = new int[elements.length];
+                //glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
+                //System.out.println("EBO: " + Arrays.toString(test1));
+                //System.out.println("Elements: " + Arrays.toString(elements));
+
+                /*==================================
+                Drawing
+                ====================================*/
+                glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
+                System.out.println("Drawing " + vertices.length + " vertices and " + elements.length + " elements");
+
+                MemoryUtil.memFree(elementBuffer);
+                MemoryUtil.memFree(vertexBuffer);
+            } else {
+                logger.warning("Chunk has no data or inconsistent data");
+            }
+        }
 
         //Unbind and cleanup everything
-        chunksToRender.clear();
-        MemoryUtil.memFree(elementBuffer);
-        MemoryUtil.memFree(vertexBuffer);
+        cleanupBuffers();
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
-        TextureLoader.unbind();
         glBindVertexArray(0);
-        cleanupBuffers();
     }
 
 
-
-    public static Player getPlayer() {
-        return Window.player;
-    }
-    public static void setPlayer(Player p) {
-        player = p;
-    }
     /**
      * Loads vertex and fragment shaders
      */
@@ -614,6 +646,7 @@ public class Window {
         }
         return null;
     }
+
     private int getCurrentWindowWidth() {
         //Passes parent window position to UI layer to use for positioning
         try (var stack = MemoryStack.stackPush()) {

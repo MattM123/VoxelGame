@@ -1,5 +1,7 @@
 package com.marcuzzo;
 
+import com.marcuzzo.Texturing.TextureLoader;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RegionManager extends GlueList<Region> {
     public static List<Region> visibleRegions = new GlueList<>();
     public static Path worldDir;
-    public static ChunkRenderer renderer;
     public static final int RENDER_DISTANCE = 4;
     public static final int REGION_BOUNDS = 512;
     public static final int CHUNK_BOUNDS = 16;
@@ -24,18 +25,19 @@ public class RegionManager extends GlueList<Region> {
      */
     public RegionManager(Path path) {
 
-        if (Window.getPlayer() == null)
-            Window.setPlayer(new Player());
+        //Bind texture atlas once when world is loading
+        TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
 
         try {
+            RegionManager.worldDir = path;
             Files.createDirectories(Paths.get(worldDir + "\\regions\\"));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        RegionManager.worldDir = path;
-        ChunkRenderer.setBounds(CHUNK_BOUNDS);
-        ChunkRenderer.setRenderDistance(RENDER_DISTANCE);
+
+        ChunkCache.setBounds(CHUNK_BOUNDS);
+        ChunkCache.setRenderDistance(RENDER_DISTANCE);
     }
 
 
@@ -172,8 +174,8 @@ public class RegionManager extends GlueList<Region> {
     public static void updateVisibleRegions() {
 
         //Updates regions within render distance
-        ChunkRenderer.getChunksToRender();
-        List<Region> updatedRegions = ChunkRenderer.getRegions();
+        ChunkCache.getChunksToRender();
+        List<Region> updatedRegions = ChunkCache.getRegions();
 
         if (visibleRegions.size() > 0) {
             System.out.println("[Updating Regions...]");

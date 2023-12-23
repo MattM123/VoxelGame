@@ -13,7 +13,6 @@ public class Cube implements Serializable {
     private float y;
     private float z;
 
-    //TODO: Redo cube class to be less complicated and memory intensive
     public Cube(float x, float y, float z, BlockType b) {
         this.x = x;
         this.y = y;

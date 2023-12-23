@@ -37,7 +37,6 @@ public class ShaderProgram {
      */
     public void uploadTexture(String varName, int slot) {
         int varLocation = glGetUniformLocation(getProgramId(), varName);
-       // glUse
         glUniform1f(varLocation, slot);
 
     }

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ChunkRenderer {
+public class ChunkCache {
     private static int renderDistance;
     public static int bounds = RegionManager.CHUNK_BOUNDS;
     private static Chunk playerChunk;
@@ -19,17 +19,17 @@ public class ChunkRenderer {
      * @param bounds The length of the chunk.
      * @param playerChunk The chunk a player inhabits.
      */
-    public ChunkRenderer(int renderDistance, int bounds, Chunk playerChunk) {
-        ChunkRenderer.renderDistance = renderDistance;
-        ChunkRenderer.bounds = bounds;
-        ChunkRenderer.playerChunk = playerChunk;
+    public ChunkCache(int renderDistance, int bounds, Chunk playerChunk) {
+        ChunkCache.renderDistance = renderDistance;
+        ChunkCache.bounds = bounds;
+        ChunkCache.playerChunk = playerChunk;
     }
 
     public static void setBounds(int bounds) {
-        ChunkRenderer.bounds = bounds;
+        ChunkCache.bounds = bounds;
     }
     public static void setRenderDistance(int renderDistance) {
-        ChunkRenderer.renderDistance = renderDistance;
+        ChunkCache.renderDistance = renderDistance;
     }
     public static void setPlayerChunk(Chunk c) {
         playerChunk = c;

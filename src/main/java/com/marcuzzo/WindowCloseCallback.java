@@ -1,5 +1,6 @@
 package com.marcuzzo;
 
+import com.marcuzzo.Texturing.TextureLoader;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI;
@@ -12,6 +13,7 @@ public class WindowCloseCallback implements GLFWWindowCloseCallbackI {
     @Override
     public void invoke(long window) {
         Callbacks.glfwFreeCallbacks(Window.getWindowPtr());
+        TextureLoader.unbind();
         Objects.requireNonNull(glfwSetErrorCallback(null)).free();
         glfwDestroyWindow(Window.getWindowPtr());
 

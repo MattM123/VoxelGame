@@ -27,7 +27,7 @@ public class Main {
 
         //Creating game directory if it does not exist
         try {
-            Files.createDirectories(Paths.get(root + "worlds/"));
+            Files.createDirectories(Paths.get(root + "worlds//"));
         } catch (Exception e) {
             e.printStackTrace();
         }
