@@ -14,9 +14,9 @@ public class ChunkCache {
 
     /**
      *
-     * Determines what chunks should be rendered around the player.
-     * @param renderDistance Controls the range in which chunks should renderer.
-     * @param bounds The length of the chunk.
+     * Updates, stores, and returns a list of in-memory chunks that should be rendered around a player at
+     * a certain point in time.
+     * @param bounds The length and width of the square chunk.
      * @param playerChunk The chunk a player inhabits.
      */
     public ChunkCache(int renderDistance, int bounds, Chunk playerChunk) {

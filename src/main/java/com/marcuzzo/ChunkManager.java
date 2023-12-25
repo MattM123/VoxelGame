@@ -7,13 +7,18 @@ import java.io.Serializable;
 public class ChunkManager extends GlueList<Chunk> implements Serializable {
     private final PointCompare pointCompare = new PointCompare();
 
+    /**
+     * Since the order of chunks within a region matters the ChunkManager object
+     * provides methods of chunk insertion and retrieval within a Region object
+     */
     public ChunkManager() {
     }
 
 
     /**
-     * Gets a chunk from the manager that is located in a specific position. This location is the same
-     * location that was used when the chunk was initialized. If no chunk is found with the location
+     * Gets a chunk from the ChunkManager that is located in a specific position
+     * in O(log n) time complexity. This location is the same location that
+     * was used when the chunk was initialized. If no chunk is found with the location
      * null is returned
      *
      * @param loc The location of the chunk
@@ -23,23 +28,10 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
         return binarySearchChunkWithLocation(0, this.size() - 1, loc);
     }
 
-/*
-    public void updateChunks() {
-       // if (RegionManager.renderer == null)
-        //    RegionManager.renderer = new ChunkRenderer(RENDER_DISTANCE, Chunk.CHUNK_BOUNDS,
-       //             RegionManager.getRegionWithPlayer().getChunkWithPlayer(), Window.getPlayer());
-
-        GlueList<Chunk> chunks = ChunkRenderer.getChunksToRender();
-
-        for (Chunk c : chunks) {
-            Main.executor.execute(c::updateMesh);
-        }
-    }
- */
-
     /**
-     * Uses binary search to search for an index to insert a new chunk at.
-     * Ensures the list is sorted as new objects are inserted into it.
+     * Searches for an index to insert a new Chunk at in O(log n) time complexity.
+     * Ensures the list is sorted by the Chunks location as new Chunks are inserted into it.
+     *
      * @param l The farthest left index of the list
      * @param r The farthest right index of the list
      * @param c The chunk location to search for.
@@ -115,7 +107,8 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
     }
 
     /**
-     * Uses binary search to search for a chunk that is in the list
+     * Searches for a chunk in O(log n) time complexity and returns it.
+     *
      * @param l The farthest left index of the list
      * @param r The farthest right index of the list
      * @param c The chunk location to search for.
@@ -147,6 +140,10 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
 
     }
 
+    /**
+     * @return Returns a string containing all the chunks that are inside the
+     * region associated with this ChunkManager.
+     */
     public String getChunks() {
         StringBuilder s = new StringBuilder();
         for (Chunk c : this)

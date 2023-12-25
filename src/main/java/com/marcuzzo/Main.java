@@ -18,7 +18,7 @@ public class Main {
     public static FSTConfiguration getInstance() {
         StaticComponentContainer.Modules.exportAllToAll();
         FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
-        conf.registerClass(Cube.class, Chunk.class, Region.class);
+        conf.registerClass(Block.class, Chunk.class, Region.class);
         return conf;
     }
 

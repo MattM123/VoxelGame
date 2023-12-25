@@ -19,7 +19,10 @@ public class RegionManager extends GlueList<Region> {
     public static final long WORLD_SEED = 1234567890;
 
     /**
-     * The highest level object representation of a world
+     * The highest level object representation of a world. The RegionManager
+     * contains an in-memory list of regions that are currently within
+     * the players render distance. This region list is constantly updated each
+     * frame and is used for reading regions from file and writing regions to file.
      *
      * @param path The path of this worlds directory
      */
@@ -45,8 +48,8 @@ public class RegionManager extends GlueList<Region> {
 
     /**
      * Removes a region from the visible regions once a player leaves a region and
-     * their render distance no longer overlaps it.
-     * Also writes region to file in the process.
+     * their render distance no longer overlaps it. Writes region to file in the process
+     * effectively saving the regions state for future use.
      *
      * @param r The region to leave
      */
@@ -168,8 +171,11 @@ public class RegionManager extends GlueList<Region> {
 
 
     /**
-     * Updates the regions surrounding the player and reads them from file if in render distance.
-     * Also removes and writes regions to file that are no longer in render distance.
+     * The ChunkCache will update the regions in memory, storing them as potentially blank objects
+     * if the region was not already in memory. This method is responsible for reading region data
+     * into these blank region objects when in memory and writing data to the file
+     * system for future use when the player no longer inhabits them.
+     *
      */
     public static void updateVisibleRegions() {
 

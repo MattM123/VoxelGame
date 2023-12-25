@@ -4,23 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="Improved efficiency generating chunk data + other stuff">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RenderTask.java" afterDir="false" />
+    <list default="true" id="fd7cf624-70f5-4e17-853c-461427025d55" name="Changes" comment="Removed maps, added more comment documentation, Cube is now Block">
       <change afterPath="$PROJECT_DIR$/src/main/resources/textures/Sunday Mango.ttf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Chunk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkCache.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ImGuiLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkCache.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ChunkManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Cube.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Block.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Player.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/PointCompare.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Region.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RegionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/ShaderProgram.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/FragShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/FragShader.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/VertexShader.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Texturing/VertexShader.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RenderTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/RenderTask.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/Window.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/marcuzzo/WindowCloseCallback.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/marcuzzo/WindowCloseCallback.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -220,7 +217,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698288927874</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Improved efficiency generating chunk data + other stuff">
+      <created>1703373088755</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1703373088755</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -254,7 +258,8 @@
     <MESSAGE value="Added chunk data caches for rendering. Updated debug UI. Improved chunk retrieval." />
     <MESSAGE value="checkpoint" />
     <MESSAGE value="Improved efficiency generating chunk data + other stuff" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved efficiency generating chunk data + other stuff" />
+    <MESSAGE value="Removed maps, added more comment documentation, Cube is now Block" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed maps, added more comment documentation, Cube is now Block" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

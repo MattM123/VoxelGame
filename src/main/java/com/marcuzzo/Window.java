@@ -28,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -75,7 +74,6 @@ public class Window {
     private int vboID;
     private int eboID;
     private static boolean isMenuRendered = false;
-    private static boolean isWorldRendered = false;
 
     public Window(ImGuiLayer layer) {
         if (player == null)
@@ -284,13 +282,11 @@ public class Window {
             if (loadedWorld == null) {
                 angle += 0.007f;
                 isMenuRendered = true;
-                isWorldRendered = false;
                 renderMenu();
             }
             else {
                 glfwSetInputMode(windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 isMenuRendered = false;
-                isWorldRendered = true;
                 renderWorld();
             }
 
@@ -412,7 +408,6 @@ public class Window {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
-
             /*=====================================
             Vertex attribute definitions for shaders
             ======================================*/
@@ -476,6 +471,7 @@ public class Window {
     // Bind buffers outside of loop
 
     private void renderWorld() {
+
         /*=====================================
          View Matrix setup
         ======================================*/
@@ -538,6 +534,7 @@ public class Window {
         //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
         ArrayList<Future<RenderTask>> renderTasks = new ArrayList<>();
         vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
 
         //Gets ChunkCache mesh data in a non-blocking manner
         for (Chunk c : chunksToRender) {
@@ -545,31 +542,27 @@ public class Window {
              Getting vertex and element information for rendering
             ========================================================*/
 
-            //getChunkData always returns a map with a single entry
-            //If chunk is already rendered in the same state that it's requested to render in, the
-            //data caches will be used rather than recalculating chunk data
-          //  Map.Entry<float[], int[]> chunkData = c.getChunkData().entrySet().stream().findFirst().orElse(null);
-        //    assert chunkData != null;
-           // float[] vertices = chunkData.getKey();
-          //  int[] elements = chunkData.getValue();
-           // if (c.getEbo() == 0)
-            c.setEbo(glGenBuffers());
-            c.setVbo(glGenBuffers());
-            renderTasks.add(Main.executor.submit(c::getRenderTask));
+            //Will only queue chunks RenderTask if chunk mesh has been modified
+            if (c.shouldRerender()) {
+                c.setEbo(glGenBuffers());
+                c.setVbo(glGenBuffers());
+                renderTasks.add(Main.executor.submit(c::getRenderTask));
+                c.setRerender(false);
+
+            }
+
         }
 
-        glBindVertexArray(vaoID);
         for (Future<RenderTask> chunkRenderTask : renderTasks) {
+
             float[] vertices = new float[0];
             int[] elements = new int[0];
-            Map.Entry<float[], int[]> chunkData;
             RenderTask task = null;
             //Gets chunk data from previously submitted Future
             try {
                 task = chunkRenderTask.get();
-                chunkData = chunkRenderTask.get().getChunkData();
-                vertices = ArrayUtils.addAll(vertices, chunkData.getKey());
-                elements = ArrayUtils.addAll(elements, chunkData.getValue());
+                vertices = ArrayUtils.addAll(vertices, task.getVertexData());
+                elements = ArrayUtils.addAll(elements, task.getElementData());
             } catch (InterruptedException | ExecutionException e) {
                 logger.warning(e.getMessage());
             }
@@ -588,10 +581,10 @@ public class Window {
                 glBindBuffer(GL_ARRAY_BUFFER, task.getVbo());
                 glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
-                //float[] test = new float[vertices.length];
-                //glGetBufferSubData(GL_ARRAY_BUFFER, 0, test);
-                //System.out.println("VBO: " + Arrays.toString(test));
-                //System.out.println("Vertices: " + Arrays.toString(vertices));
+               // float[] test = new float[vertices.length];
+               // glGetBufferSubData(GL_ARRAY_BUFFER, 0, test);
+               // System.out.println("VBO:      " + Arrays.toString(test));
+               // System.out.println("Vertices: " + Arrays.toString(vertices).substring(0, 1000));
 
                 //Elements
                 IntBuffer elementBuffer = MemoryUtil.memAllocInt(elements.length);
@@ -605,10 +598,10 @@ public class Window {
                 glEnableVertexAttribArray(1);
                 glEnableVertexAttribArray(2);
 
-                //int[] test1 = new int[elements.length];
-                //glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
-                //System.out.println("EBO: " + Arrays.toString(test1));
-                //System.out.println("Elements: " + Arrays.toString(elements));
+              //  int[] test1 = new int[elements.length];
+              //  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
+              //  System.out.println("EBO:      " + Arrays.toString(test1));
+              //  System.out.println("Elements: " + Arrays.toString(elements).substring(0, 1000));
 
                 /*==================================
                 Drawing

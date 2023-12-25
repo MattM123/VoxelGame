@@ -1,24 +1,39 @@
 package com.marcuzzo;
 
-
-import java.util.Map;
-
 public class RenderTask {
     private final int vbo;
     private final int ebo;
-    private final Map<float[], int[]> chunkData;
+    private final float[] vertexData;
+    private final int[] elementData;
     private final Chunk origin;
 
-    public RenderTask(Map<float[], int[]> chunkData, int vbo, int ebo, Chunk origin) {
-        this.chunkData = chunkData;
+
+    /**
+     * RenderTask objects store GL primitive data relative to certain chunks.
+     * Each chunk has its own RenderTask that it generates or regenerates
+     * when that chunk is flagged for re-rendering. The RenderTask contains a
+     * VBO, EBO, vertex array, and element array specific to the chunk which is used
+     * when performing draw calls with glDrawElements
+     *
+     * @param vertexData float array constructed using the chunks heightmap
+     * @param elementData int array constructed alongside the vertexData
+     * @param vbo Chunk specific VBO used for rendering
+     * @param ebo Chunk specific EBO used for rendering
+     * @param origin The chunk that this RenderTask belongs to
+     */
+    public RenderTask(float[] vertexData, int[] elementData, int vbo, int ebo, Chunk origin) {
+        this.vertexData = vertexData;
+        this.elementData = elementData;
         this.origin = origin;
         this.vbo = vbo;
         this.ebo = ebo;
     }
 
-    public Map.Entry<float[], int[]> getChunkData() throws RuntimeException {
-
-        return chunkData.entrySet().iterator().next();
+    public float[] getVertexData() {
+        return vertexData;
+    }
+    public int[] getElementData() {
+        return elementData;
     }
     public int getVbo() {
         return vbo;

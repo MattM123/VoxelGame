@@ -1,6 +1,5 @@
 package com.marcuzzo;
 
-import javafx.geometry.Point2D;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
 
@@ -12,14 +11,13 @@ import java.util.logging.Logger;
 public class Region extends ChunkManager implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-
-    //TODO: use Area and Shape class instead
-    private Shape regionBounds;
+    private final Shape regionBounds;
     private static final Logger logger = Logger.getLogger("Logger");
     private boolean didChange = false;
 
     /**
-     * An object representing a 32x32 chunk area, 1024 chunks in total managed by a chunk manager.
+     * An object representing a 32x32 chunk area, 1024 chunks in total.
+     * .
      * @param x coordinate of the corner of this region
      * @param z coordinate of the corner of this region
      */
@@ -30,14 +28,14 @@ public class Region extends ChunkManager implements Serializable {
     }
     /**
      * Returns true if at least one chunk in a region has changed. If true,
-     * the region as a whol is also marked as having changed therefore
+     * the region as a whole is also marked as having changed therefore
      * should be re-written to file.
      *
      * @return True if at least one chunk has changed, false if not
      */
     public boolean didChange() {
         for (Chunk c : this) {
-            if (c.didChange()) {
+            if (c.shouldRerender()) {
                 didChange = true;
                 break;
             }
@@ -48,6 +46,7 @@ public class Region extends ChunkManager implements Serializable {
     public Shape getBounds() {
         return regionBounds;
     }
+
     /**
      * Writes to file only if the didChange flag of the region is true. This
      * flag would only be true if at least one chunks didChange flag was also true.

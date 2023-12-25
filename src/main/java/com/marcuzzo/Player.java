@@ -147,6 +147,17 @@ public class Player implements Serializable {
         yaw = x;
         pitch = y;
     }
+
+    /**
+     * Instantiates the players view matrix with is later
+     * multiplied by the projection matrix. Typically,
+     * a third matrix, model matrix, would be multiplied with these
+     * matrices but since the chunk models are already defined
+     * in three-dimensional space relative to the world, that
+     * is not necessary.
+     *
+     * @return The players view matrix
+     */
     public Matrix4f getViewMatrix() {
         Vector3f lookPoint = new Vector3f(0f, 0f, -1f);
         lookPoint.rotateX(Math.toRadians(pitch), lookPoint);

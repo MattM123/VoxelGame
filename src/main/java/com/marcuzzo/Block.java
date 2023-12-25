@@ -4,22 +4,38 @@ import com.marcuzzo.Texturing.BlockType;
 
 import java.io.*;
 
-public class Cube implements Serializable {
+public class Block implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private BlockType type;
-    private float f;
     private float x;
     private float y;
     private float z;
 
-    public Cube(float x, float y, float z, BlockType b) {
+
+    /**
+     * Constructs a new Block with a specified BlockType
+     * @param x coordinate of Block
+     * @param y coordinate of Block
+     * @param z coordinate of Block
+     * @param b BlockType of Block
+     */
+    public Block(float x, float y, float z, BlockType b) {
         this.x = x;
         this.y = y;
         this.z = z;
         type = b;
     }
-    public Cube(float x, float y, float z) {
+
+    /**
+     * Constructs a new Block who's BlockType is specified
+     * by a default value defined in a chunks initialization
+     * method
+     * @param x coordinate of Block
+     * @param y coordinate of Block
+     * @param z coordinate of Block
+     */
+    public Block(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -33,9 +49,6 @@ public class Cube implements Serializable {
         this.type = type;
     }
 
-    public float getF() {
-        return f;
-    }
     public float getY() {
         return y;
     }
@@ -62,9 +75,9 @@ public class Cube implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Cube) {
-            return this.getX() == ((Cube) o).getX() && this.getY() == ((Cube) o).getY()
-                    && this.getZ() == ((Cube) o).getZ() && this.getBlockType() == ((Cube) o).getBlockType();
+        if (o instanceof Block) {
+            return this.getX() == ((Block) o).getX() && this.getY() == ((Block) o).getY()
+                    && this.getZ() == ((Block) o).getZ() && this.getBlockType() == ((Block) o).getBlockType();
         } else return false;
     }
 

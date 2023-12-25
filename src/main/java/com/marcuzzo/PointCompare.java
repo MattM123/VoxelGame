@@ -7,7 +7,7 @@ import java.util.Comparator;
 
 /**
  * Since each chunk is identified by the three-dimensional point its located at
- * this object is used to compare chunks to be sorted for use with
+ * this object is used to sort the chunks for use with
  * binary search algorithms.
  */
 public class PointCompare implements Comparator<Vector3f>, Serializable {
