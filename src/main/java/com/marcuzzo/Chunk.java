@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 //public class Chunk extends PolygonMeshView implements Serializable {
 
+@SuppressWarnings("SpellCheckingInspection")
 public class Chunk implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -37,10 +38,17 @@ public class Chunk implements Serializable {
 
     public Chunk() {
 
-      //  setOnMouseClicked(mouseEvent -> {
-     //       rerender = true;
-     //       Main.executor.execute(this::updateMesh);
-    //    });
+        //Chunk events executed by player
+        //determine when a chunk should be re-rendered
+
+        //Option 1: Use polygonmesh view with built-in listeners (might not even work
+        //since object is the only reference to javafx in the whole project)
+        //Option 2: Dont extend Chunk and implement custom listeners
+
+       // setOnMouseClicked(mouseEvent -> {
+       //     rerender = true;
+       //     Main.executor.execute(this::updateMesh);
+       // });
     }
 
     /**
@@ -110,9 +118,9 @@ public class Chunk implements Serializable {
     }
 
     /**
-     * Re-generates this chunks vertices, RenderTask, and marks this
-     * chunk for re-rendering next frame. This occurs when a block is
-     * removed, added, or otherwise modified
+     * Regenerates this chunks heightmap if the chunk is marked for
+     * re-rendering. The chunks vertex and element data caches
+     * will also be updated for re-rendering
      */
     public void updateMesh() {
 
@@ -145,9 +153,6 @@ public class Chunk implements Serializable {
             } catch (Exception e) {
                 logger.warning(e.getMessage());
             }
-
-            //Flags chunk for rerendering
-            rerender = true;
         }
     }
 
@@ -232,8 +237,9 @@ public class Chunk implements Serializable {
     }
     /**
      * Since the location of each chunk is unique this is used as an
-     * identifier by the ChunkManager to retrieve and insert chunks
-     * @return The corner vertex of this chunks mesh view.
+     * identifier by the ChunkManager to retrieve, insert, and
+     * effectively sort chunks.
+     * @return The corner vertex of this chunk.
      */
     public Vector3f getLocation() {
         return location;
@@ -288,10 +294,11 @@ public class Chunk implements Serializable {
     /**
      * Generates or regenerates this chunks RenderTask. The RenderTask is
      * used to graphically render the Chunk. Calling this method will
-     * automatically update this chunks vertex and element data and
-     * return a new RenderTask that can be passed to the GPU through a draw call.
+     * automatically update (if necessary) this chunks vertex and element data and
+     * return a new RenderTask that can be passed to the GPU when drawing.
      *
-     * @return A RenderTask that can be used in GL draw calls to render this Chunk
+     * @return A RenderTask whose regularly updated contents can be
+     * used in GL draw calls to render this Chunk graphically
      */
     public RenderTask getRenderTask() {
 
@@ -329,10 +336,10 @@ public class Chunk implements Serializable {
                     TextureCoordinateStore right = block.getBlockType().getRightCoords();
                     float[] posXFace = {
                             //Position                                  Color                       Texture
-                            origin[0], origin[1] - 1, origin[2] - 1,    0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
-                            origin[0], origin[1], origin[2] - 1,        0.0f, 0.0f, 0.0f, 0.0f,     right.getTopRight()[0], right.getTopRight()[1],
-                            origin[0], origin[1] - 1, origin[2],        0.0f, 0.0f, 0.0f, 0.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
-                            origin[0], origin[1], origin[2],            0.0f, 0.0f, 0.0f, 0.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
+                            origin[0], origin[1] - 1, origin[2] - 1,    1.0f, 0.0f, 0.0f, 1.0f,     right.getBottomRight()[0], right.getBottomRight()[1],
+                            origin[0], origin[1], origin[2] - 1,        1.0f, 0.0f, 0.0f, 1.0f,     right.getTopRight()[0], right.getTopRight()[1],
+                            origin[0], origin[1] - 1, origin[2],        1.0f, 0.0f, 0.0f, 1.0f,     right.getBottomLeft()[0], right.getBottomLeft()[1],
+                            origin[0], origin[1], origin[2],            1.0f, 0.0f, 0.0f, 1.0f,     right.getTopLeft()[0], right.getTopLeft()[1],
                     };
                     int[] posXElements = {
                             elementCounter, elementCounter + 1, elementCounter + 2, elementCounter + 3, 80000
@@ -457,12 +464,8 @@ public class Chunk implements Serializable {
     }
 
     /**
-     * If any of the Chunk vertices have been modified, this will mark the chunk
-     * for re-rendering which will cause the RenderTask to be regenerated and included
-     * in a draw call.
-     *
-     * @return True if this chunk should be re-rendered due to change, false if this chunk
-     * has not been modified in any way.
+     * @return True if this chunk should be re-rendered on the next frame, false if this chunk
+     * has not been modified in any way and therefore should not be re-rendered.
      */
     public boolean shouldRerender() {
         return rerender;

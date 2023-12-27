@@ -467,7 +467,7 @@ public class Window {
     }
 
 
-    //Potential iomprovents:
+    //Potential optimizations:
     // Bind buffers outside of loop
 
     private void renderWorld() {
@@ -475,9 +475,6 @@ public class Window {
         /*=====================================
          View Matrix setup
         ======================================*/
-        // Set up the model-view-projection matrix
-        // Set up the model-view matrix for rotation
-
         Matrix4f viewProjectionMatrix = new Matrix4f(projectionMatrix).mul(player.getViewMatrix());
         // System.out.println(Arrays.toString(viewProjectionMatrix.get(new float[16])));
 
@@ -524,12 +521,15 @@ public class Window {
 
         //Position
         glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
+        glEnableVertexAttribArray(0);
+
         //Color
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
+        glEnableVertexAttribArray(1);
+
         //Texture
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
-
-
+        glEnableVertexAttribArray(2);
 
         //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
         ArrayList<Future<RenderTask>> renderTasks = new ArrayList<>();
@@ -547,6 +547,9 @@ public class Window {
                 c.setEbo(glGenBuffers());
                 c.setVbo(glGenBuffers());
                 renderTasks.add(Main.executor.submit(c::getRenderTask));
+
+                //Chunks RenderTask has been queued so chunks render flag can
+                // be set to false now until the chunk is modified again
                 c.setRerender(false);
 
             }
@@ -594,10 +597,6 @@ public class Window {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, task.getEbo());
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
-                glEnableVertexAttribArray(0);
-                glEnableVertexAttribArray(1);
-                glEnableVertexAttribArray(2);
-
               //  int[] test1 = new int[elements.length];
               //  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
               //  System.out.println("EBO:      " + Arrays.toString(test1));
@@ -607,6 +606,8 @@ public class Window {
                 Drawing
                 ====================================*/
                 glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
+
+
                 System.out.println("Drawing " + vertices.length + " vertices and " + elements.length + " elements");
 
                 MemoryUtil.memFree(elementBuffer);

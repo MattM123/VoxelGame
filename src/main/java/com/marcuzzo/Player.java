@@ -149,11 +149,11 @@ public class Player implements Serializable {
     }
 
     /**
-     * Instantiates the players view matrix with is later
+     * Instantiates the players view matrix witch is later
      * multiplied by the projection matrix. Typically,
      * a third matrix, model matrix, would be multiplied with these
-     * matrices but since the chunk models are already defined
-     * in three-dimensional space relative to the world, that
+     * matrices but since the chunk objects are already defined
+     * in three-dimensional space relative to the world projection, that
      * is not necessary.
      *
      * @return The players view matrix
