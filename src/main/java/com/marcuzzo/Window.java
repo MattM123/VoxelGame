@@ -605,8 +605,8 @@ public class Window {
                 /*==================================
                 Drawing
                 ====================================*/
+                TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
                 glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
-
 
                 System.out.println("Drawing " + vertices.length + " vertices and " + elements.length + " elements");
 
