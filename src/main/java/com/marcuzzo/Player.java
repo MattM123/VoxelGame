@@ -12,6 +12,7 @@ public class Player implements Serializable {
     private static Vector3f position;
     private static float yaw = 0f;
     private static float pitch = 0f;
+   // public static int REACH_DISTANCE = 4;
 
     /**
      * Default player object is initialized at a position of 0,0,0 within
@@ -148,6 +149,9 @@ public class Player implements Serializable {
         pitch = y;
     }
 
+    public static Vector2f getLookDir() {
+        return new Vector2f(yaw, pitch);
+    }
     /**
      * Instantiates the players view matrix witch is later
      * multiplied by the projection matrix. Typically,

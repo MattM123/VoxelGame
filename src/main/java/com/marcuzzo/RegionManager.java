@@ -13,7 +13,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RegionManager extends GlueList<Region> {
     public static List<Region> visibleRegions = new GlueList<>();
     public static Path worldDir;
-    public static final int RENDER_DISTANCE = 4;
+    public static final int CHUNK_HEIGHT = 320;
+    public static final int RENDER_DISTANCE = 3;
     public static final int REGION_BOUNDS = 512;
     public static final int CHUNK_BOUNDS = 16;
     public static final long WORLD_SEED = 1234567890;
@@ -168,7 +169,6 @@ public class RegionManager extends GlueList<Region> {
         return r;
 
     }
-
 
     /**
      * The ChunkCache will update the regions in memory, storing them as potentially blank objects

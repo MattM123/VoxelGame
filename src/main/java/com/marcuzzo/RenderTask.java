@@ -9,11 +9,11 @@ public class RenderTask {
 
 
     /**
-     * RenderTask objects store GL primitive data relative to certain chunks.
+     * RenderTask objects store GL primitive data relative to each chunk.
      * Each chunk has its own RenderTask that it generates or regenerates
      * when that chunk is flagged for re-rendering. The RenderTask contains a
-     * VBO, EBO, vertex array, and element array specific to the chunk which is used
-     * when performing draw calls with glDrawElements
+     * VBO, EBO, vertex array, and element array used when performing draw
+     * calls with glDrawElements
      *
      * @param vertexData float array constructed using the chunks heightmap
      * @param elementData int array constructed alongside the vertexData
@@ -41,7 +41,7 @@ public class RenderTask {
     public int getEbo() {
         return ebo;
     }
-    public Chunk getChunk() {
-        return origin;
-    }
+  //  public Chunk getChunk() {
+  //     return origin;
+   // }
 }

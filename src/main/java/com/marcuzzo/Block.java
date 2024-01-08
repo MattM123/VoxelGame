@@ -1,6 +1,7 @@
 package com.marcuzzo;
 
 import com.marcuzzo.Texturing.BlockType;
+import org.joml.Vector3f;
 
 import java.io.*;
 
@@ -49,19 +50,15 @@ public class Block implements Serializable {
         this.type = type;
     }
 
-    public float getY() {
-        return y;
+    public Vector3f getLocation() {
+        return new Vector3f(x, y, z);
     }
-    public float getX() {
-        return x;
-    }
-    public float getZ() { return z; }
 
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeFloat(getX());
-        out.writeFloat(getY());
-        out.writeFloat(getZ());
+        out.writeFloat(x);
+        out.writeFloat(y);
+        out.writeFloat(z);
         out.writeObject(getBlockType());
     }
 
@@ -76,14 +73,14 @@ public class Block implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Block) {
-            return this.getX() == ((Block) o).getX() && this.getY() == ((Block) o).getY()
-                    && this.getZ() == ((Block) o).getZ() && this.getBlockType() == ((Block) o).getBlockType();
+            return getLocation().x == ((Block) o).getLocation().x && getLocation().y == ((Block) o).getLocation().y
+                    && getLocation().z == ((Block) o).getLocation().z;// && this.getBlockType() == ((Block) o).getBlockType();
         } else return false;
     }
 
     @Override
     public String toString() {
-        return "[" + this.getX() + ", " + this.getY() + ", " + this.getZ() + "]";
+        return "[" + x + ", " + y + ", " + z + "]";
 
     }
 

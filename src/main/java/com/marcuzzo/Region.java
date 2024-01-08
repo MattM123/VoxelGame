@@ -82,23 +82,21 @@ public class Region extends ChunkManager implements Serializable {
     private Region readRegion(InputStream stream) {
 
         AtomicReference<Region> r = new AtomicReference<>();
-        Main.executor.execute(() -> {
-            FSTObjectInput in = Main.getInstance().getObjectInput(stream);
+        FSTObjectInput in = Main.getInstance().getObjectInput(stream);
 
-            try {
-                r.set((Region) in.readObject(Region.class));
-                System.out.println("Reading Region: " + r);
-                stream.close();
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
-            }
+        try {
+            r.set((Region) in.readObject(Region.class));
+            System.out.println("Reading Region: " + r);
+            stream.close();
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
 
-            try { in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-        });
+        try { in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return r.get();
     }
 

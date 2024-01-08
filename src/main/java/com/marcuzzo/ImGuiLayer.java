@@ -58,7 +58,7 @@ public class ImGuiLayer {
                         ImGui.button("Load World");
                         if (ImGui.isItemClicked()) {
                             RegionManager rm = new RegionManager(Paths.get(worlds + c.getFileName()));
-                            RegionManager.updateVisibleRegions();
+                         //   RegionManager.updateVisibleRegions();
                             Window.setLoadedWorld(rm);
                         }
                         ImGui.sameLine();
@@ -115,10 +115,18 @@ public class ImGuiLayer {
             ImGui.text("");
             ImGui.text("Cursor Position: " + MouseInput.getCursorPos().x + ", " + MouseInput.getCursorPos().y);
             ImGui.popStyleColor();
+            ImGui.text("Memory: " + formatSize(Runtime.getRuntime().totalMemory()) +  "/" + formatSize(Runtime.getRuntime().maxMemory()));
             ImGui.end();
 
         }
     }
+
+    public static String formatSize(long v) {
+        if (v < 1024) return v + " B";
+        int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
+        return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
+    }
+
     public void setParentX(int x) {
         this.parentX = x;
     }

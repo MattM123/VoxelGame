@@ -67,13 +67,14 @@ public class Window {
     public static Chunk globalPlayerChunk;
     public static Region globalPlayerRegion;
     private static RegionManager loadedWorld;
-    public final float PLAYER_STEP_SPEED = 1.0f;
+   // public final float PLAYER_STEP_SPEED = 1.0f;
     public final float MOUSE_SENSITIVITY = 0.04f;
     private final MouseInput mouseInput = new MouseInput();
     private int vaoID;
     private int vboID;
     private int eboID;
     private static boolean isMenuRendered = false;
+    private final String texturePath = "C:/Users/mattm/Desktop/Personal/Programming/Projects/untitled/src/main/resources/textures/texture_atlas.png";
 
     public Window(ImGuiLayer layer) {
         if (player == null)
@@ -85,6 +86,9 @@ public class Window {
         initWindow();
         glfwMakeContextCurrent(windowPtr);
         GL.createCapabilities();
+
+        vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
 
         mouseInput.init();
         initImGui();
@@ -197,11 +201,11 @@ public class Window {
         //========================
 
         //Load the vertex shader from file
-        String vertexShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/Texturing/VertexShader.glsl");
+        String vertexShaderSource = loadShaderFromFile("C:/Users/mattm/Desktop/Personal/Programming/Projects/untitled/src/main/java/com/marcuzzo/Texturing/VertexShader.glsl");
         shaderProgram.createVertexShader(vertexShaderSource);
 
         // Load the fragment shader from file
-        String fragmentShaderSource = loadShaderFromFile("src/main/java/com/marcuzzo/Texturing/FragShader.glsl");
+        String fragmentShaderSource = loadShaderFromFile("C:/Users/mattm/Desktop/Personal/Programming/Projects/untitled/src/main/java/com/marcuzzo/Texturing/FragShader.glsl");
         shaderProgram.createFragmentShader(fragmentShaderSource);
 
         //Load Textures
@@ -316,148 +320,144 @@ public class Window {
     }
 
     private void renderMenu() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-
-            TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
-            TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
-            TextureCoordinateStore grassLeft = BlockType.GRASS.getLeftCoords();
-            TextureCoordinateStore grassRight = BlockType.GRASS.getRightCoords();
-            TextureCoordinateStore grassTop = BlockType.GRASS.getTopCoords();
-            TextureCoordinateStore grassBott = BlockType.GRASS.getBottomCoords();
+        TextureCoordinateStore grassFront = BlockType.GRASS.getFrontCoords();
+        TextureCoordinateStore grassBack = BlockType.GRASS.getBackCoords();
+        TextureCoordinateStore grassLeft = BlockType.GRASS.getLeftCoords();
+        TextureCoordinateStore grassRight = BlockType.GRASS.getRightCoords();
+        TextureCoordinateStore grassTop = BlockType.GRASS.getTopCoords();
+        TextureCoordinateStore grassBott = BlockType.GRASS.getBottomCoords();
 
 
-            float[] vertices = {
-                    //Position (X, Y, Z)    Color (R, G, B, A)          Texture (U, V)
+        float[] vertices = {
+                //Position (X, Y, Z)    Color (R, G, B, A)          Texture (U, V)
+                // Front face
+                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomLeft()[0], grassFront.getBottomLeft()[1],
+                0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomRight()[0], grassFront.getBottomRight()[1],
+                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopLeft()[0], grassFront.getTopLeft()[1],
+                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopRight()[0], grassFront.getTopRight()[1],
 
-                    // Front face
-                    -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomLeft()[0], grassFront.getBottomLeft()[1],
-                    0.5f, -0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getBottomRight()[0], grassFront.getBottomRight()[1],
-                    -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopLeft()[0], grassFront.getTopLeft()[1],
-                    0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassFront.getTopRight()[0], grassFront.getTopRight()[1],
+                // Back face
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomLeft()[0], grassBack.getBottomLeft()[1],
+                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomRight()[0], grassBack.getBottomRight()[1],
+                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
 
-                    // Back face
-                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomLeft()[0], grassBack.getBottomLeft()[1],
-                    0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getBottomRight()[0], grassBack.getBottomRight()[1],
-                    -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopLeft()[0], grassBack.getTopLeft()[1],
-                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassBack.getTopRight()[0], grassBack.getTopRight()[1],
+                // Left face
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
+                -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
+                -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
+                -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
 
-                    // Left face
-                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomLeft()[0], grassLeft.getBottomLeft()[1],
-                    -0.5f,  0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopLeft()[0], grassLeft.getTopLeft()[1],
-                    -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getBottomRight()[0], grassLeft.getBottomRight()[1],
-                    -0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassLeft.getTopRight()[0], grassLeft.getTopRight()[1],
+                // Right face
+                0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
+                0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
+                0.5f,  0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopLeft()[0], grassRight.getTopLeft()[1],
 
-                    // Right face
-                    0.5f, -0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomRight()[0], grassRight.getBottomRight()[1],
-                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopRight()[0], grassRight.getTopRight()[1],
-                    0.5f, -0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getBottomLeft()[0], grassRight.getBottomLeft()[1],
-                    0.5f,  0.5f, 0.5f,      0.0f, 0.0f, 0.0f, 0.0f,     grassRight.getTopLeft()[0], grassRight.getTopLeft()[1],
+                // Top face
+                -0.5f, 0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomLeft()[0], grassTop.getBottomLeft()[1],
+                0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomRight()[0], grassTop.getBottomRight()[1],
+                -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopLeft()[0], grassTop.getTopLeft()[1],
+                0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopRight()[0], grassTop.getTopRight()[1],
 
-                    // Top face
-                    -0.5f, 0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomLeft()[0], grassTop.getBottomLeft()[1],
-                    0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getBottomRight()[0], grassTop.getBottomRight()[1],
-                    -0.5f, 0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopLeft()[0], grassTop.getTopLeft()[1],
-                    0.5f,  0.5f,  0.5f,     0.0f, 0.0f, 0.0f, 0.0f,     grassTop.getTopRight()[0], grassTop.getTopRight()[1],
+                // Bottom face
+                -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomLeft()[0], grassBott.getBottomLeft()[1],
+                0.5f,  -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomRight()[0], grassBott.getBottomRight()[1],
+                -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopLeft()[0], grassBott.getTopLeft()[1],
+                0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
+        };
 
-                    // Bottom face
-                    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomLeft()[0], grassBott.getBottomLeft()[1],
-                    0.5f,  -0.5f, -0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getBottomRight()[0], grassBott.getBottomRight()[1],
-                    -0.5f, -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopLeft()[0], grassBott.getTopLeft()[1],
-                    0.5f,  -0.5f,  0.5f,    0.0f, 0.0f, 0.0f, 0.0f,     grassBott.getTopRight()[0], grassBott.getTopRight()[1],
-            };
-
-            // Declares the Elements Array, where the indices to be drawn are stored
-            int[] elementArray = {
-                    //Front face
-                    0, 1, 2, 3, 80000,
-                    //Back face
-                    4, 5, 6, 7, 80000,
-                    //Left face
-                    8, 9, 10, 11, 80000,
-                    //Right face
-                    12, 13, 14, 15, 80000,
-                    //Top face
-                    16, 17, 18, 19, 80000,
-                    //Bottom face
-                    20, 21, 22, 23, 80000
-            };
-
-
-            /*==================================
-            Buffer binding and loading
-            ====================================*/
-            vboID = glGenBuffers();
-            eboID = glGenBuffers();
-            vaoID = glGenVertexArrays();
-
-            glBindVertexArray(vaoID);
-
-            //Vertices
-            FloatBuffer vertexBuffer = stack.mallocFloat(vertices.length);
-            vertexBuffer.put(vertices).flip();
-
-            // Create VBO upload the vertex buffer
-            glBindBuffer(GL_ARRAY_BUFFER, vboID);
-            glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-            //Elements
-            IntBuffer elementBuffer = stack.mallocInt(elementArray.length);
-            elementBuffer.put(elementArray).flip();
-
-            // Create EBO upload the element buffer
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
-            /*=====================================
-            Vertex attribute definitions for shaders
-            ======================================*/
-            int posSize = 3;
-            int colorSize = 4;
-            int uvSize = 2;
-            int floatSizeBytes = 4;
-            int vertexSizeBytes = (posSize + colorSize + uvSize) * floatSizeBytes;
-
-            //Position
-            glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
-            glEnableVertexAttribArray(0);
-
-            //Color
-            glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
-            glEnableVertexAttribArray(1);
-
-            //Texture
-            glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
-            glEnableVertexAttribArray(2);
-
-            /*==================================
-            View Matrix setup
-            ====================================*/
-
-            // Set up the model-view matrix for rotation
-            modelViewMatrix = new Matrix4f();
-            modelViewMatrix.translate(new Vector3f(0.0f, 0f, -2.0f));
-            modelViewMatrix.rotate(angle, new Vector3f(0.2f, 1.0f, 0.2f));
+        // Declares the Elements Array, where the indices to be drawn are stored
+        int[] elementArray = {
+                //Front face
+                0, 1, 2, 3, 80000,
+                //Back face
+                4, 5, 6, 7, 80000,
+                //Left face
+                8, 9, 10, 11, 80000,
+                //Right face
+                12, 13, 14, 15, 80000,
+                //Top face
+                16, 17, 18, 19, 80000,
+                //Bottom face
+                20, 21, 22, 23, 80000
+        };
 
 
-            // Set up the model-view-projection matrix
-            Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(modelViewMatrix);
+        /*==================================
+        Buffer binding and loading
+        ====================================*/
+        vboID = glGenBuffers();
+        eboID = glGenBuffers();
+        vaoID = glGenVertexArrays();
+
+        glBindVertexArray(vaoID);
+
+        //Vertices
+        FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(vertices.length);
+        vertexBuffer.put(vertices).flip();
+
+        // Create VBO upload the vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+
+        //Elements
+        IntBuffer elementBuffer = MemoryUtil.memAllocInt(elementArray.length);
+        elementBuffer.put(elementArray).flip();
+
+        // Create EBO upload the element buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
+
+        /*=====================================
+        Vertex attribute definitions for shaders
+        ======================================*/
+        int posSize = 3;
+        int colorSize = 4;
+        int uvSize = 2;
+        int floatSizeBytes = 4;
+        int vertexSizeBytes = (posSize + colorSize + uvSize) * floatSizeBytes;
+
+        //Position
+        glVertexAttribPointer(0, posSize, GL_FLOAT, false, vertexSizeBytes, 0);
+        glEnableVertexAttribArray(0);
+
+        //Color
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, posSize * Float.BYTES);
+        glEnableVertexAttribArray(1);
+
+        //Texture
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (posSize + colorSize) * Float.BYTES);
+        glEnableVertexAttribArray(2);
+
+        /*==================================
+        View Matrix setup
+        ====================================*/
+
+        // Set up the model-view matrix for rotation
+        modelViewMatrix = new Matrix4f();
+        modelViewMatrix.translate(new Vector3f(0.0f, 0f, -2.0f));
+        modelViewMatrix.rotate(angle, new Vector3f(0.2f, 1.0f, 0.2f));
 
 
-            // Pass the model-view-projection matrix to the shader as a uniform
-            int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "viewProjectionMatrix");
-            glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
+        // Set up the model-view-projection matrix
+        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix).mul(modelViewMatrix);
 
-            /*==================================
-            Drawing
-            ====================================*/
-            TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
-            glDrawElements(GL_TRIANGLE_STRIP, elementArray.length, GL_UNSIGNED_INT, 0);
 
-        } catch(Exception e) {
-            logger.warning(e.getMessage());
-        }
+        // Pass the model-view-projection matrix to the shader as a uniform
+        int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "viewProjectionMatrix");
+        glUniformMatrix4fv(mvpMatrixLocation, false, modelViewProjectionMatrix.get(new float[16]));
+
+        /*==================================
+        Drawing
+        ====================================*/
+        TextureLoader.loadTexture(texturePath);
+        glDrawElements(GL_TRIANGLE_STRIP, elementArray.length, GL_UNSIGNED_INT, 0);
+
 
         //Unbind and cleanup everything
+        MemoryUtil.memFree(elementBuffer);
+        MemoryUtil.memFree(vertexBuffer);
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
@@ -466,11 +466,8 @@ public class Window {
         cleanupBuffers();
     }
 
-
-    //Potential optimizations:
-    // Bind buffers outside of loop
-
     private void renderWorld() {
+        TextureLoader.loadTexture(texturePath);
 
         /*=====================================
          View Matrix setup
@@ -481,7 +478,6 @@ public class Window {
         // Pass the model-view-projection matrix to the shader as a uniform
         int mvpMatrixLocation = glGetUniformLocation(shaderProgram.getProgramId(), "viewProjectionMatrix");
         glUniformMatrix4fv(mvpMatrixLocation, false, viewProjectionMatrix.get(new float[16]));
-
 
         /*====================================
          Chunk and Region check
@@ -496,7 +492,7 @@ public class Window {
             RegionManager.enterRegion(globalPlayerRegion);
         }
 
-        //Updates the chunks to render only when the player has moved into a new chunk
+        //Updates the chunks to render when the player has moved into a new chunk
         GlueList<Chunk> chunksToRender = new GlueList<>(ChunkCache.getChunksToRender());
         if (!Player.getChunkWithPlayer().getLocation().equals(globalPlayerChunk.getLocation())) {
             globalPlayerChunk = Player.getChunkWithPlayer();
@@ -509,6 +505,9 @@ public class Window {
                 RegionManager.updateVisibleRegions();
             }
         }
+
+        vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
 
         /*=====================================
          Vertex attribute definitions for shaders
@@ -533,29 +532,17 @@ public class Window {
 
         //Per chunk primitive information calculated in thread pool and later sent to GPU for drawing
         ArrayList<Future<RenderTask>> renderTasks = new ArrayList<>();
-        vaoID = glGenVertexArrays();
-        glBindVertexArray(vaoID);
 
         //Gets ChunkCache mesh data in a non-blocking manner
         for (Chunk c : chunksToRender) {
-            /*======================================================
-             Getting vertex and element information for rendering
-            ========================================================*/
-
-            //Will only queue chunks RenderTask if chunk mesh has been modified
-            if (c.shouldRerender()) {
-                c.setEbo(glGenBuffers());
-                c.setVbo(glGenBuffers());
-                renderTasks.add(Main.executor.submit(c::getRenderTask));
-
-                //Chunks RenderTask has been queued so chunks render flag can
-                // be set to false now until the chunk is modified again
-                c.setRerender(false);
-
-            }
-
+            c.setEbo(glGenBuffers());
+            c.setVbo(glGenBuffers());
+            renderTasks.add(Main.executor.submit(c::getRenderTask));
         }
 
+        /*======================================================
+         Getting vertex and element information for rendering
+        ========================================================*/
         for (Future<RenderTask> chunkRenderTask : renderTasks) {
 
             float[] vertices = new float[0];
@@ -584,10 +571,10 @@ public class Window {
                 glBindBuffer(GL_ARRAY_BUFFER, task.getVbo());
                 glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
-               // float[] test = new float[vertices.length];
-               // glGetBufferSubData(GL_ARRAY_BUFFER, 0, test);
-               // System.out.println("VBO:      " + Arrays.toString(test));
-               // System.out.println("Vertices: " + Arrays.toString(vertices).substring(0, 1000));
+          //      float[] test = new float[vertices.length];
+          //      glGetBufferSubData(GL_ARRAY_BUFFER, 0, test);
+          //      System.out.println("VBO:      " + Arrays.toString(test));
+          //      System.out.println("Vertices: " + Arrays.toString(vertices).substring(0, 200));
 
                 //Elements
                 IntBuffer elementBuffer = MemoryUtil.memAllocInt(elements.length);
@@ -597,19 +584,17 @@ public class Window {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, task.getEbo());
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
 
-              //  int[] test1 = new int[elements.length];
-              //  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
-              //  System.out.println("EBO:      " + Arrays.toString(test1));
-              //  System.out.println("Elements: " + Arrays.toString(elements).substring(0, 1000));
+           //     int[] test1 = new int[elements.length];
+           //       glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, test1);
+           //     System.out.println("EBO:      " + Arrays.toString(test1));
+           //     System.out.println("Elements: " + Arrays.toString(elements));
 
                 /*==================================
                 Drawing
                 ====================================*/
-                TextureLoader.loadTexture("src/main/resources/textures/texture_atlas.png");
                 glDrawElements(GL_TRIANGLE_STRIP, elements.length, GL_UNSIGNED_INT, 0);
 
                 System.out.println("Drawing " + vertices.length + " vertices and " + elements.length + " elements");
-
                 MemoryUtil.memFree(elementBuffer);
                 MemoryUtil.memFree(vertexBuffer);
             } else {
@@ -618,11 +603,13 @@ public class Window {
         }
 
         //Unbind and cleanup everything
-        cleanupBuffers();
+        renderTasks.clear();
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
+        TextureLoader.unbind();
         glBindVertexArray(0);
+        cleanupBuffers();
     }
 
 
@@ -668,7 +655,6 @@ public class Window {
     public static long getWindowPtr() {
         return windowPtr;
     }
-
     public static boolean isMenuRendered() {
         return isMenuRendered;
     }

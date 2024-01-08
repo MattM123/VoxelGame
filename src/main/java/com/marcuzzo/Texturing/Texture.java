@@ -3,10 +3,13 @@ package com.marcuzzo.Texturing;
 public enum Texture {
     DIRT(new TextureCoordinateStore(new float[]{0f, 0f}, new float[]{0.03125f, 0f},
             new float[]{0f, 0.03125f}, new float[]{0.03125f, 0.03125f})),
+
     GRASS_SIDE(new TextureCoordinateStore(new float[]{0.03125f, 0.03125f}, new float[]{0.0625f, 0.03125f},
             new float[]{0.03125f, 0f}, new float[]{0.0625f, 0f})),
+
     GRASS_FULL(new TextureCoordinateStore(new float[]{0.0625f, 0.03125f}, new float[]{0.09375f, 0.03125f},
             new float[]{0.0625f, 0f}, new float[]{0.09375f, 0.0f}));
+
     private final TextureCoordinateStore init;
 
     /**

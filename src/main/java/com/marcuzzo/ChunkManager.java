@@ -5,7 +5,6 @@ import org.joml.Vector3f;
 import java.io.Serializable;
 
 public class ChunkManager extends GlueList<Chunk> implements Serializable {
-    private final PointCompare pointCompare = new PointCompare();
 
     /**
      * Since the order of chunks within a region matters the ChunkManager object
@@ -13,7 +12,6 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      */
     public ChunkManager() {
     }
-
 
     /**
      * Gets a chunk from the ChunkManager that is located in a specific position
@@ -38,8 +36,7 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @return Returns the chunk object that was just inserted into the list.
      */
     public Chunk binaryInsertChunkWithLocation(int l, int r, Vector3f c) {
-      //  System.out.println(this.getChunks());
-      //  System.out.println(this.size);
+        ChunkComparator pointCompare = new ChunkComparator();
         Chunk q = new Chunk().initialize(c.x, c.y, c.z);
 
         if (this.isEmpty()) {
@@ -115,6 +112,7 @@ public class ChunkManager extends GlueList<Chunk> implements Serializable {
      * @return Returns the chunk if found. Else null.
      */
     public Chunk binarySearchChunkWithLocation(int l, int r, Vector3f c) {
+        ChunkComparator pointCompare = new ChunkComparator();
         if (r >= l) {
             int mid = l + (r - l) / 2;
 
